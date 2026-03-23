@@ -1,0 +1,7 @@
+*.dmg
+*.exe
+*.AppImage
+*.deb
+*.zip
+*.blockmap
+.well-known/

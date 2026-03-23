@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MoneroUSD — Private USD Stablecoin</title>
+  <meta name="description" content="MoneroUSD (USDm) is a privacy-preserving USD stablecoin built on Monero technology with FCMP++ enhanced privacy." />
+  <style>
+    @font-face { font-family: 'Outfit'; src: url('/fonts/outfit-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+    @font-face { font-family: 'Outfit'; src: url('/fonts/outfit-500.woff2') format('woff2'); font-weight: 500; font-display: swap; }
+    @font-face { font-family: 'Outfit'; src: url('/fonts/outfit-600.woff2') format('woff2'); font-weight: 600; font-display: swap; }
+    @font-face { font-family: 'Outfit'; src: url('/fonts/outfit-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+    @font-face { font-family: 'JetBrains Mono'; src: url('/fonts/jetbrainsmono-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+    @font-face { font-family: 'JetBrains Mono'; src: url('/fonts/jetbrainsmono-600.woff2') format('woff2'); font-weight: 600; font-display: swap; }
+
+    :root {
+      --orange: #FF6600;
+      --orange-glow: rgba(255, 102, 0, 0.4);
+      --orange-dim: rgba(255, 102, 0, 0.12);
+      --bg: #0a0a0a;
+      --surface: #111;
+      --card: #161616;
+      --border: #222;
+      --text: #eaeaea;
+      --muted: #777;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+
+    /* 3D Background Canvas */
+    #bgCanvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Content sits above canvas */
+    .content { position: relative; z-index: 1; }
+
+    /* Nav */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(10, 10, 10, 0.85);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 102, 0, 0.1);
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 68px;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 12px;
+      text-decoration: none; color: var(--text);
+      font-weight: 700; font-size: 1.2rem;
+    }
+    .nav-logo img { height: 36px; width: 36px; filter: drop-shadow(0 0 8px var(--orange-glow)); }
+    .nav-links { display: flex; gap: 32px; align-items: center; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none; font-size: 0.92rem;
+      font-weight: 500; transition: color 0.25s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .btn-wallet {
+      background: var(--orange); color: #fff; border: none; border-radius: 10px;
+      padding: 10px 24px; font-size: 0.92rem; font-weight: 600;
+      cursor: pointer; text-decoration: none; transition: all 0.25s;
+      box-shadow: 0 0 20px rgba(255, 102, 0, 0.25);
+    }
+    .btn-wallet:hover { box-shadow: 0 0 30px rgba(255, 102, 0, 0.45); transform: translateY(-1px); }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+      padding: 120px 28px 80px;
+    }
+    .hero-inner { max-width: 800px; }
+    .hero-logo {
+      width: 120px; height: 120px; margin: 0 auto 32px;
+      filter: drop-shadow(0 0 40px var(--orange-glow));
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.2rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+    .hero h1 .accent { color: var(--orange); }
+    .hero .tagline {
+      font-size: clamp(1.05rem, 2.5vw, 1.3rem);
+      color: var(--muted);
+      max-width: 580px;
+      margin: 0 auto 40px;
+      font-weight: 400;
+    }
+    .hero-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn-main {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 16px 36px; border-radius: 12px; font-size: 1.05rem;
+      font-weight: 600; cursor: pointer; text-decoration: none;
+      transition: all 0.25s; font-family: inherit;
+    }
+    .btn-primary {
+      background: var(--orange); color: #fff; border: 2px solid var(--orange);
+      box-shadow: 0 4px 30px rgba(255, 102, 0, 0.3);
+    }
+    .btn-primary:hover { box-shadow: 0 4px 40px rgba(255, 102, 0, 0.5); transform: translateY(-2px); }
+    .btn-ghost {
+      background: transparent; color: var(--text);
+      border: 2px solid var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--orange); color: var(--orange); }
+    .hero-sub {
+      margin-top: 48px; font-size: 0.82rem; color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .hero-sub span { color: var(--orange); }
+
+    /* Stats Bar */
+    .stats-bar {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: rgba(17, 17, 17, 0.6);
+      backdrop-filter: blur(10px);
+      padding: 40px 28px;
+    }
+    .stats-grid {
+      max-width: 1000px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 24px; text-align: center;
+    }
+    .stat-val {
+      font-size: 1.8rem; font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--orange);
+      text-shadow: 0 0 20px rgba(255, 102, 0, 0.3);
+    }
+    .stat-label { font-size: 0.82rem; color: var(--muted); margin-top: 4px; font-weight: 500; }
+
+    /* Section shared */
+    section { padding: 100px 28px; }
+    .section-inner { max-width: 1100px; margin: 0 auto; }
+    .section-title {
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 700; text-align: center;
+      margin-bottom: 12px; letter-spacing: -0.02em;
+    }
+    .section-subtitle {
+      text-align: center; color: var(--muted);
+      max-width: 550px; margin: 0 auto 56px; font-size: 1rem;
+    }
+
+    /* Features */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .feature {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .feature::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--orange), transparent);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .feature:hover { border-color: rgba(255, 102, 0, 0.3); transform: translateY(-4px); }
+    .feature:hover::before { opacity: 1; }
+    .feature-icon {
+      width: 52px; height: 52px; border-radius: 12px;
+      background: var(--orange-dim);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 20px;
+      border: 1px solid rgba(255, 102, 0, 0.15);
+    }
+    .feature h3 { font-size: 1.1rem; margin-bottom: 8px; font-weight: 600; }
+    .feature p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+
+    /* How It Works */
+    .how-section { background: var(--surface); }
+    .steps { max-width: 700px; margin: 0 auto; }
+    .step {
+      display: flex; gap: 24px; margin-bottom: 40px;
+      align-items: flex-start; position: relative;
+    }
+    .step:not(:last-child)::after {
+      content: '';
+      position: absolute; left: 23px; top: 52px; bottom: -20px;
+      width: 2px;
+      background: linear-gradient(180deg, var(--orange), transparent);
+      opacity: 0.3;
+    }
+    .step-num {
+      min-width: 48px; height: 48px; border-radius: 50%;
+      background: var(--orange-dim);
+      border: 2px solid var(--orange);
+      color: var(--orange);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 1.1rem; flex-shrink: 0;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .step-content h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 6px; }
+    .step-content p { color: var(--muted); font-size: 0.92rem; }
+
+    /* Downloads */
+    .downloads-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px; max-width: 960px; margin: 0 auto;
+    }
+    .dl-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+    .dl-card:hover { border-color: rgba(255, 102, 0, 0.3); transform: translateY(-3px); }
+    .dl-icon { font-size: 2.4rem; margin-bottom: 16px; }
+    .dl-card h3 { font-size: 1.1rem; margin-bottom: 6px; font-weight: 600; }
+    .dl-card .dl-version {
+      font-size: 0.78rem; color: var(--muted); margin-bottom: 16px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .btn-dl {
+      display: inline-block;
+      background: var(--orange-dim); color: var(--orange);
+      border: 1px solid rgba(255, 102, 0, 0.2);
+      border-radius: 10px; padding: 10px 24px;
+      font-weight: 600; font-size: 0.9rem;
+      text-decoration: none; transition: all 0.25s;
+      font-family: inherit;
+    }
+    .btn-dl:hover { background: var(--orange); color: #fff; }
+
+    /* Quarantine Notice */
+    .quarantine-notice {
+      background: var(--card);
+      border: 1px solid rgba(255, 102, 0, 0.25);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-top: 32px;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .quarantine-notice h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--orange);
+    }
+    .quarantine-notice p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+    .quarantine-cmd {
+      background: #0d0d0d;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--orange);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      word-break: break-all;
+    }
+    .quarantine-cmd code { flex: 1; }
+    .btn-copy {
+      background: var(--orange-dim);
+      border: 1px solid rgba(255, 102, 0, 0.2);
+      color: var(--orange);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .btn-copy:hover { background: var(--orange); color: #fff; }
+
+    /* FCMP++ Deep Dive */
+    .fcmp-section { background: var(--surface); }
+    .fcmp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+    .fcmp-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+    }
+    .fcmp-card h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+    .fcmp-card p {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    .fcmp-card .highlight {
+      color: var(--orange);
+      font-weight: 600;
+    }
+    .fcmp-comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 32px;
+    }
+    .compare-col {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+    }
+    .compare-col.better { border-color: rgba(255, 102, 0, 0.3); }
+    .compare-col h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .compare-col.better h4 { color: var(--orange); }
+    .compare-col ul {
+      list-style: none;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .compare-col ul li {
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .compare-col ul li:last-child { border: none; }
+
+    /* FAQ */
+    .faq-list {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+    }
+    .faq-q {
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1.02rem;
+      font-weight: 600;
+      text-align: left;
+      padding: 22px 0;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      transition: color 0.2s;
+    }
+    .faq-q:hover { color: var(--orange); }
+    .faq-q .faq-arrow {
+      font-size: 1.2rem;
+      transition: transform 0.3s;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .faq-item.open .faq-arrow { transform: rotate(45deg); color: var(--orange); }
+    .faq-a {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.35s ease;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.7;
+    }
+    .faq-item.open .faq-a {
+      max-height: 400px;
+      padding-bottom: 22px;
+    }
+    @media (max-width: 768px) {
+      .fcmp-comparison { grid-template-columns: 1fr; }
+    }
+
+    /* CTA */
+    .cta {
+      text-align: center;
+      background: radial-gradient(ellipse at 50% 100%, rgba(255, 102, 0, 0.06) 0%, transparent 60%);
+    }
+    .cta h2 { font-size: 2rem; font-weight: 700; margin-bottom: 12px; }
+    .cta p { color: var(--muted); margin-bottom: 32px; max-width: 480px; margin-left: auto; margin-right: auto; }
+
+    /* Footer */
+    footer {
+      padding: 32px 28px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--muted); font-size: 0.8rem;
+    }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--orange); }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .nav-links a:not(.btn-wallet) { display: none; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .hero-actions { flex-direction: column; align-items: center; }
+      .btn-main { width: 100%; max-width: 300px; justify-content: center; }
+      .step::after { display: none; }
+    }
+    @media (max-width: 480px) {
+      .hero-logo { width: 90px; height: 90px; }
+      .features-grid, .downloads-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<div class="content">
+
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <img src="/logo.svg" alt="MoneroUSD" />
+        MoneroUSD
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#download">Download</a>
+        <a href="/about.html">Details</a>
+        <a href="/run-node.html">Run a Node</a>
+        <a href="/wallet" class="btn-wallet">Open Wallet</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <img src="/logo.svg" alt="MoneroUSD" class="hero-logo" />
+      <h1>The <span class="accent">Private</span> Dollar</h1>
+      <p class="tagline">USDm is a privacy-preserving stablecoin pegged 1:1 to USD. Built on Monero with FCMP++ cryptography — your money, your privacy.</p>
+      <div class="hero-actions">
+        <a href="/wallet" class="btn-main btn-primary">Launch Wallet</a>
+        <a href="#download" class="btn-main btn-ghost">Download Desktop</a>
+      </div>
+      <p class="hero-sub"><span>$</span> 1 USDm = 1 USD &mdash; protocol enforced</p>
+    </div>
+  </section>
+
+  <div class="stats-bar">
+    <div class="stats-grid">
+      <div><div class="stat-val">$1.00</div><div class="stat-label">Protocol Peg</div></div>
+      <div><div class="stat-val">FCMP++</div><div class="stat-label">Privacy Tech</div></div>
+      <div><div class="stat-val">120s</div><div class="stat-label">Block Time</div></div>
+      <div><div class="stat-val">RandomX</div><div class="stat-label">Mining Algorithm</div></div>
+    </div>
+  </div>
+
+  <section id="features">
+    <div class="section-inner">
+      <h2 class="section-title">Why MoneroUSD</h2>
+      <p class="section-subtitle">Private, stable, and decentralized. The stablecoin that doesn't compromise.</p>
+      <div class="features-grid">
+        <div class="feature">
+          <div class="feature-icon">&#128274;</div>
+          <h3>Full-Chain Membership Proofs</h3>
+          <p>FCMP++ proves your transaction is valid without revealing which coins you spent. Every transaction references the entire blockchain, making analysis impossible.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">&#128176;</div>
+          <h3>USD-Pegged Stability</h3>
+          <p>1 USDm always equals $1 at the protocol level. On-chain conversions enforce the peg through consensus rules — no centralized issuer, no counterparty risk.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">&#128256;</div>
+          <h3>Swap BTC &amp; XMR</h3>
+          <p>Convert Bitcoin and Monero directly to USDm at live market rates. Median pricing from multiple oracles prevents manipulation.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">&#9935;</div>
+          <h3>CPU Mining</h3>
+          <p>Mine USDm from your wallet with one click. RandomX proof-of-work keeps the network decentralized and ASIC-resistant.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">&#128737;</div>
+          <h3>Biometric Security</h3>
+          <p>Optional Face ID and Touch ID protect sensitive operations. Your biometric binds to your wallet seed — nobody else can authorize transactions.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">&#127760;</div>
+          <h3>Browser &amp; Desktop</h3>
+          <p>Use the browser wallet instantly or download the native app for macOS, Windows, and Linux. Your keys never leave your device.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="how-section" id="how-it-works">
+    <div class="section-inner">
+      <h2 class="section-title">How It Works</h2>
+      <p class="section-subtitle">Three steps to private, stable money.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h3>Create Your Wallet</h3>
+            <p>Generate a 25-word seed phrase. That's your only credential — no accounts, no email, no identity verification. Write it down and you control your money forever.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h3>Fund with Crypto</h3>
+            <p>Swap BTC or XMR for USDm at live market rates. Your crypto is converted at the median price from multiple independent oracles, locking in your rate at swap creation.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h3>Spend Privately</h3>
+            <p>Send USDm to anyone. FCMP++ full-chain membership proofs make every transaction completely untraceable — your balance, your history, and your identity stay private.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="download">
+    <div class="section-inner">
+      <h2 class="section-title">Download</h2>
+      <p class="section-subtitle">Native desktop wallet for every platform. Or just use the browser.</p>
+      <div class="downloads-grid">
+        <div class="dl-card">
+          <div class="dl-icon">&#63743;</div>
+          <h3>macOS</h3>
+          <div class="dl-version">v1.2.39 &mdash; Apple Silicon &amp; Intel</div>
+          <a href="https://update.monerousd.org/Monero%20USD%20Wallet-1.2.39-arm64.dmg" class="btn-dl">Download for Mac (Apple Silicon)</a>
+          <a href="https://update.monerousd.org/Monero%20USD%20Wallet-1.2.39.dmg" class="btn-dl" style="margin-top:6px">Download for Mac (Intel)</a>
+        </div>
+        <div class="dl-card">
+          <div class="dl-icon">&#128187;</div>
+          <h3>Windows</h3>
+          <div class="dl-version">v1.2.28 &mdash; 64-bit</div>
+          <a href="https://update.monerousd.org/Monero%20USD%20Wallet%20Setup%201.2.28.exe" class="btn-dl">Download for Windows</a>
+        </div>
+        <div class="dl-card">
+          <div class="dl-icon">&#128039;</div>
+          <h3>Linux</h3>
+          <div class="dl-version">v1.2.28 &mdash; AppImage</div>
+          <a href="https://update.monerousd.org/Monero%20USD%20Wallet-1.2.28.AppImage" class="btn-dl">Download for Linux</a>
+        </div>
+      </div>
+
+      <div class="quarantine-notice">
+        <h4>macOS Users: Allow App to Run</h4>
+        <p>MoneroUSD is not signed with an Apple Developer certificate, so macOS will show "damaged and can't be opened." To fix this, open Terminal and run:</p>
+        <div class="quarantine-cmd">
+          <code>sudo xattr -rd com.apple.quarantine "/Applications/Monero USD Wallet.app" && sudo codesign --force --deep --sign - "/Applications/Monero USD Wallet.app"</code>
+          <button class="btn-copy" onclick="navigator.clipboard.writeText('sudo xattr -rd com.apple.quarantine &quot;/Applications/Monero USD Wallet.app&quot; &amp;&amp; sudo codesign --force --deep --sign - &quot;/Applications/Monero USD Wallet.app&quot;').then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)})">Copy</button>
+        </div>
+        <p style="margin-top:10px;font-size:0.8rem;">This removes the quarantine flag and ad-hoc signs the app locally. You will be prompted for your Mac password. If it still doesn't open, go to <strong>System Settings &rarr; Privacy &amp; Security</strong> and click <strong>"Open Anyway"</strong> next to the MoneroUSD message.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="fcmp-section" id="fcmp">
+    <div class="section-inner">
+      <h2 class="section-title">FCMP++ Deep Dive</h2>
+      <p class="section-subtitle">Full Chain Membership Proofs — the next generation of transaction privacy.</p>
+      <div class="fcmp-grid">
+        <div class="fcmp-card">
+          <h3>What is FCMP++?</h3>
+          <p>FCMP++ (<span class="highlight">Full Chain Membership Proofs</span>) is a cryptographic upgrade that allows every transaction to reference the <span class="highlight">entire blockchain</span> as its anonymity set. Instead of selecting a small ring of decoys, your transaction proves membership across all outputs ever created — without revealing which one you spent.</p>
+        </div>
+        <div class="fcmp-card">
+          <h3>Why It Matters</h3>
+          <p>Traditional ring signatures use 11-16 decoys, giving statistical heuristics a foothold. With FCMP++, the anonymity set is <span class="highlight">every output on-chain</span> — millions of possibilities. Blockchain analysis becomes cryptographically impossible, not just statistically difficult.</p>
+        </div>
+        <div class="fcmp-card">
+          <h3>How It Works</h3>
+          <p>FCMP++ uses a <span class="highlight">Curve Trees</span> construction — a tree of elliptic curve points representing all on-chain outputs. A zero-knowledge proof demonstrates your output exists somewhere in this tree without revealing its position. The proof is compact, fast to verify, and computationally sound.</p>
+        </div>
+        <div class="fcmp-card">
+          <h3>Performance</h3>
+          <p>Despite referencing the entire chain, FCMP++ proofs are <span class="highlight">smaller than current ring signatures</span>. Transaction verification is fast, keeping block validation efficient. The privacy upgrade comes with no cost to scalability.</p>
+        </div>
+      </div>
+
+      <div class="fcmp-comparison">
+        <div class="compare-col">
+          <h4>Ring Signatures (Legacy)</h4>
+          <ul>
+            <li>11-16 decoy outputs per input</li>
+            <li>Statistical analysis can narrow candidates</li>
+            <li>Decoy selection heuristics exploitable</li>
+            <li>Privacy degrades over time with chain analysis</li>
+          </ul>
+        </div>
+        <div class="compare-col better">
+          <h4>FCMP++ (MoneroUSD)</h4>
+          <ul>
+            <li>Every output on-chain is a candidate</li>
+            <li>Zero-knowledge proof — no information leakage</li>
+            <li>No decoy selection — no heuristic attacks</li>
+            <li>Privacy is cryptographic, not statistical</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="section-inner">
+      <h2 class="section-title">FAQ</h2>
+      <p class="section-subtitle">Common questions about MoneroUSD.</p>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">What is MoneroUSD (USDm)?<span class="faq-arrow">+</span></button>
+          <div class="faq-a">USDm is a privacy-preserving stablecoin pegged 1:1 to the US dollar. It's built on Monero technology with FCMP++ cryptography, giving you the stability of a dollar with the privacy guarantees of Monero. There's no centralized issuer — the peg is enforced at the protocol level through consensus rules.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">How is the $1 peg maintained?<span class="faq-arrow">+</span></button>
+          <div class="faq-a">The peg is enforced by the protocol's consensus rules. On-chain conversions between USDm and other assets use median pricing from multiple independent oracles. The rate is locked at swap creation, ensuring you always receive $1 worth of value per USDm. No centralized treasury or reserve is needed.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">What makes FCMP++ better than ring signatures?<span class="faq-arrow">+</span></button>
+          <div class="faq-a">Ring signatures hide your transaction among 11-16 decoys, but statistical analysis can narrow down candidates over time. FCMP++ references every output on the entire blockchain as a potential source, using zero-knowledge proofs to verify without revealing which output is yours. The anonymity set goes from ~16 to millions.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Can I mine USDm?<span class="faq-arrow">+</span></button>
+          <div class="faq-a">Yes. MoneroUSD uses RandomX proof-of-work, which is designed to run efficiently on consumer CPUs and resist ASIC/GPU optimization. You can start mining directly from the wallet app with one click — no external software needed.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Is my seed phrase stored anywhere?<span class="faq-arrow">+</span></button>
+          <div class="faq-a">No. Your 25-word seed phrase is generated locally on your device and never transmitted to any server. It is the sole key to your wallet — if you lose it, your funds cannot be recovered. Write it down on paper and store it securely.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Why does macOS block the app?<span class="faq-arrow">+</span></button>
+          <div class="faq-a">macOS applies a quarantine flag to apps downloaded from the internet that aren't signed with an Apple Developer certificate. MoneroUSD is open-source and not signed by Apple. To run the app, open Terminal and run: <code style="color:var(--orange)">sudo xattr -rd com.apple.quarantine "/Applications/Monero USD Wallet.app" && sudo codesign --force --deep --sign - "/Applications/Monero USD Wallet.app"</code> — this removes the quarantine flag and ad-hoc signs the app locally. If it still won't open, go to System Settings &rarr; Privacy &amp; Security and click "Open Anyway."</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I swap BTC or XMR for USDm?<span class="faq-arrow">+</span></button>
+          <div class="faq-a">Open the wallet (browser or desktop), go to the Swap tab, select the asset you want to convert (BTC or XMR), enter the amount, and confirm. The swap uses median oracle pricing and is processed on-chain. Your rate is locked at the moment of swap creation.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Can I run my own node?<span class="faq-arrow">+</span></button>
+          <div class="faq-a">Yes. The desktop wallet includes a "Create Node" button that can build and run a local MoneroUSD node directly on your machine. Running your own node gives you full sovereignty — you verify transactions yourself without trusting any third-party server.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <h2>No download needed</h2>
+    <p>Open the wallet right in your browser. Create or restore a wallet in seconds.</p>
+    <a href="/wallet" class="btn-main btn-primary">Open Browser Wallet</a>
+  </section>
+
+  <footer>
+    <p>MoneroUSD &copy; 2026 &mdash; Private stablecoin built on Monero technology</p>
+  </footer>
+
+</div>
+
+<script>
+(function() {
+  var canvas = document.getElementById('bgCanvas');
+  var gl = canvas.getContext('webgl', { alpha: false, antialias: true })
+           || canvas.getContext('experimental-webgl', { alpha: false, antialias: true });
+  if (!gl) return;
+
+  var W, H;
+  function resize() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    gl.viewport(0, 0, canvas.width, canvas.height);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  var vsSource = [
+    'attribute vec3 aPos;',
+    'attribute float aPhase;',
+    'uniform float uTime;',
+    'uniform vec2 uRes;',
+    'uniform float uScroll;',
+    'varying float vAlpha;',
+    'varying float vGlow;',
+    '',
+    'void main() {',
+    '  float x = aPos.x;',
+    '  float z = aPos.z;',
+    '',
+    '  float wave1 = sin(x * 2.0 + uTime * 0.5 + z * 0.8) * 0.12;',
+    '  float wave2 = cos(z * 1.5 + uTime * 0.35 + x * 1.2) * 0.08;',
+    '  float wave3 = sin((x + z) * 1.8 + uTime * 0.7) * 0.05;',
+    '  float y = aPos.y + wave1 + wave2 + wave3;',
+    '',
+    '  float fov = 1.2;',
+    '  float camZ = 2.0;',
+    '  float depth = z + camZ;',
+    '  float px = (x * fov) / depth;',
+    '  float py = (y * fov) / depth;',
+    '',
+    '  float aspect = uRes.x / uRes.y;',
+    '  px /= aspect;',
+    '',
+    '  gl_Position = vec4(px, py - 0.15, 0.0, 1.0);',
+    '',
+    '  float size = (6.0 / depth) * (uRes.y / 800.0);',
+    '  gl_PointSize = max(size, 1.0);',
+    '',
+    '  float depthAlpha = smoothstep(5.0, 1.0, depth);',
+    '  float heightGlow = smoothstep(0.0, 0.25, abs(wave1 + wave2));',
+    '  vAlpha = depthAlpha * (0.3 + heightGlow * 0.7);',
+    '  vAlpha *= (1.0 - uScroll);',
+    '  vGlow = heightGlow;',
+    '}'
+  ].join('\n');
+
+  var fsSource = [
+    'precision mediump float;',
+    'varying float vAlpha;',
+    'varying float vGlow;',
+    '',
+    'void main() {',
+    '  vec2 c = gl_PointCoord - 0.5;',
+    '  float r = dot(c, c);',
+    '  if (r > 0.25) discard;',
+    '',
+    '  float softEdge = 1.0 - smoothstep(0.1, 0.25, r);',
+    '',
+    '  vec3 baseColor = vec3(1.0, 0.4, 0.0);',
+    '  vec3 glowColor = vec3(1.0, 0.55, 0.15);',
+    '  vec3 color = mix(baseColor, glowColor, vGlow);',
+    '',
+    '  gl_FragColor = vec4(color, vAlpha * softEdge * 0.7);',
+    '}'
+  ].join('\n');
+
+  function createShader(type, src) {
+    var s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      gl.deleteShader(s);
+      return null;
+    }
+    return s;
+  }
+
+  var vs = createShader(gl.VERTEX_SHADER, vsSource);
+  var fs = createShader(gl.FRAGMENT_SHADER, fsSource);
+  if (!vs || !fs) return;
+
+  var prog = gl.createProgram();
+  gl.attachShader(prog, vs);
+  gl.attachShader(prog, fs);
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+  gl.useProgram(prog);
+
+  var aPos = gl.getAttribLocation(prog, 'aPos');
+  var aPhase = gl.getAttribLocation(prog, 'aPhase');
+  var uTime = gl.getUniformLocation(prog, 'uTime');
+  var uRes = gl.getUniformLocation(prog, 'uRes');
+  var uScroll = gl.getUniformLocation(prog, 'uScroll');
+
+  var cols = 80, rows = 60;
+  var particles = [];
+  for (var i = 0; i < rows; i++) {
+    for (var j = 0; j < cols; j++) {
+      var x = (j / cols - 0.5) * 4.0;
+      var z = (i / rows) * 4.0 + 0.5;
+      var phase = Math.random() * Math.PI * 2;
+      particles.push(x, 0, z, phase);
+    }
+  }
+  var count = cols * rows;
+
+  var buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(particles), gl.STATIC_DRAW);
+
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 3, gl.FLOAT, false, 16, 0);
+  if (aPhase >= 0) {
+    gl.enableVertexAttribArray(aPhase);
+    gl.vertexAttribPointer(aPhase, 1, gl.FLOAT, false, 16, 12);
+  }
+
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.ONE, gl.ONE); // pure additive on opaque black canvas
+
+  var scrollFade = 0;
+  window.addEventListener('scroll', function() {
+    scrollFade = Math.min(1, window.pageYOffset / (H * 0.7));
+  });
+
+  function render(t) {
+    requestAnimationFrame(render);
+    var time = t * 0.001;
+
+    gl.clearColor(0.039, 0.039, 0.039, 1.0); // match page bg #0a0a0a, opaque
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    if (scrollFade >= 1) return;
+
+    gl.uniform1f(uTime, time);
+    gl.uniform2f(uRes, canvas.width, canvas.height);
+    gl.uniform1f(uScroll, scrollFade);
+
+    gl.drawArrays(gl.POINTS, 0, count);
+  }
+  requestAnimationFrame(render);
+})();
+</script>
+
+</body>
+</html>

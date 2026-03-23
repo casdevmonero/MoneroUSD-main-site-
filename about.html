@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MoneroUSD — Details</title>
+  <meta name="description" content="MoneroUSD (USDm) builds on Monero's privacy foundation — learn about the technology, staking, atomic swaps, and more." />
+  <style>
+    @font-face { font-family: 'Outfit'; src: url('/fonts/outfit-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+    @font-face { font-family: 'Outfit'; src: url('/fonts/outfit-600.woff2') format('woff2'); font-weight: 600; font-display: swap; }
+    @font-face { font-family: 'Outfit'; src: url('/fonts/outfit-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+    @font-face { font-family: 'JetBrains Mono'; src: url('/fonts/jetbrainsmono-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+
+    :root { --orange: #FF6600; --orange-dim: rgba(255,102,0,0.12); --bg: #0a0a0a; --surface: #111; --card: #161616; --border: #222; --text: #eaeaea; --muted: #777; --green: #22c55e; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; }
+    a { color: var(--orange); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    nav { background: rgba(10,10,10,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,102,0,0.1); padding: 0 28px; }
+    .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 68px; }
+    .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); font-weight: 700; font-size: 1.2rem; }
+    .nav-logo img { height: 36px; width: 36px; }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { color: var(--muted); font-size: 0.9rem; font-weight: 500; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    .content { max-width: 1100px; margin: 0 auto; padding: 48px 28px 80px; }
+    h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 12px; letter-spacing: -0.02em; }
+    h2 { font-size: 1.4rem; font-weight: 700; margin: 48px 0 16px; }
+    .subtitle { color: var(--muted); margin-bottom: 32px; font-size: 1.05rem; }
+
+    table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
+    th { text-align: left; padding: 12px 16px; font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); background: var(--card); }
+    td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 0.92rem; vertical-align: top; }
+    td:first-child { font-weight: 600; color: var(--muted); white-space: nowrap; width: 180px; }
+    tr:hover { background: rgba(255,102,0,0.03); }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+    .card h3 { font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .card p { font-size: 0.95rem; line-height: 1.6; }
+
+    footer { border-top: 1px solid var(--border); padding: 24px 28px; text-align: center; color: var(--muted); font-size: 0.8rem; }
+
+    @media (max-width: 640px) { td:first-child { width: auto; white-space: normal; } .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-logo"><img src="/logo.svg" alt="" />MoneroUSD</a>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/run-node.html">Run a Node</a>
+        <a href="/wallet">Open Wallet</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="content">
+    <h1>MoneroUSD Details</h1>
+    <p class="subtitle">MoneroUSD (USDm) is proudly built on Monero's battle-tested privacy technology. It extends the Monero ecosystem with stablecoin functionality, bringing USD-pegged value to the same privacy-first principles Monero users trust.</p>
+
+    <table>
+      <thead><tr><th>Feature</th><th>Monero (XMR)</th><th>MoneroUSD (USDm)</th></tr></thead>
+      <tbody>
+        <tr><td>Primary Asset</td><td>XMR — volatile cryptocurrency</td><td>USDm — USD-pegged stablecoin</td></tr>
+        <tr><td>Purpose</td><td>Private digital cash</td><td>Private, stable-value digital dollar — a complement to XMR</td></tr>
+        <tr><td>Privacy Tech</td><td>Ring signatures, stealth addresses, RingCT</td><td>FCMP++ — building on Monero's privacy research to prove membership in the full UTXO set</td></tr>
+        <tr><td>Collateralization</td><td>Market-driven value</td><td>Over-collateralized by BTC + XMR reserves (>150% ratio enforced)</td></tr>
+        <tr><td>Block Time</td><td>~2 minutes</td><td>~60 seconds</td></tr>
+        <tr><td>Emission</td><td>Tail emission (0.6 XMR/block)</td><td>Fee-based: 25% of avg on-chain fees become block rewards, guaranteeing reserve ratio above 150%</td></tr>
+        <tr><td>Atomic Swaps</td><td>XMR ↔ BTC (external tools)</td><td>Built-in BTC/XMR ↔ USDm swaps with on-chain burn/mint</td></tr>
+        <tr><td>Staking</td><td>—</td><td>Tiered: 1.5% – 6% APR, funded by swap fees and lending interest</td></tr>
+        <tr><td>Lending</td><td>—</td><td>Collateralized lending: borrow USDm against BTC/XMR</td></tr>
+        <tr><td>Consensus</td><td>RandomX (CPU mining)</td><td>RandomX (CPU mining) — same algorithm, separate network</td></tr>
+        <tr><td>Address Prefix</td><td>4 (mainnet)</td><td>M (mainnet)</td></tr>
+        <tr><td>Fork Origin</td><td>Original CryptoNote</td><td>Haven Protocol → Monero fork + FCMP++ and stablecoin extensions</td></tr>
+      </tbody>
+    </table>
+
+    <h2>How MoneroUSD Maintains the Peg</h2>
+    <div class="grid">
+      <div class="card"><h3>Reserve Backing</h3><p>BTC and XMR held in on-chain reserve addresses. Ratio must exceed 150% of all minted USDm.</p></div>
+      <div class="card"><h3>Burn & Mint</h3><p>USDm is minted when crypto is deposited, and burned (sent to provably-unspendable address) when redeemed for crypto.</p></div>
+      <div class="card"><h3>Fee Revenue</h3><p>Swap fees: 80% reserves, 15% yield pool, 5% operations. Lending interest: 50% reserves, 40% yield, 10% ops.</p></div>
+    </div>
+
+    <h2>FCMP++ vs Ring Signatures</h2>
+    <div class="grid">
+      <div class="card"><h3>Monero: Ring Signatures</h3><p>Each transaction includes a ring of 16 decoy outputs. The anonymity set is limited to ring size.</p></div>
+      <div class="card"><h3>MoneroUSD: FCMP++</h3><p>Full-Chain Membership Proofs prove a spent output belongs to the entire UTXO set. The anonymity set is the full blockchain.</p></div>
+    </div>
+  </div>
+
+  <footer><p>MoneroUSD &copy; 2026 — <a href="/">Home</a></p></footer>
+</body>
+</html>
