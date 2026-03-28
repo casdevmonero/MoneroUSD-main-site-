@@ -492,8 +492,8 @@
     <div class="stats-grid">
       <div><div class="stat-val">$1.00</div><div class="stat-label">Protocol Peg</div></div>
       <div><div class="stat-val">FCMP++</div><div class="stat-label">Privacy Tech</div></div>
+      <div><div class="stat-val">150%+</div><div class="stat-label">Min Reserve Ratio</div></div>
       <div><div class="stat-val">120s</div><div class="stat-label">Block Time</div></div>
-      <div><div class="stat-val">RandomX</div><div class="stat-label">Mining Algorithm</div></div>
     </div>
   </div>
 
@@ -514,13 +514,13 @@
         </div>
         <div class="feature">
           <div class="feature-icon">&#128256;</div>
-          <h3>Swap BTC &amp; XMR</h3>
-          <p>Convert Bitcoin and Monero directly to USDm at live market rates. Median pricing from multiple oracles prevents manipulation.</p>
+          <h3>Overcollateralized Swaps</h3>
+          <p>Deposit $150 of BTC or XMR — receive 100 USDm. The 1.5:1 mint ratio means every USDm is backed by $1.50 from day one. The reserve can only grow beyond the 150% floor.</p>
         </div>
         <div class="feature">
           <div class="feature-icon">&#9935;</div>
-          <h3>CPU Mining</h3>
-          <p>Mine USDm from your wallet with one click. RandomX proof-of-work keeps the network decentralized and ASIC-resistant.</p>
+          <h3>CPU Mining &amp; Staking</h3>
+          <p>Mine USDm with one click using RandomX. Stake for yield: 1.5% APR (no lock), 3% (30d), 4.5% (90d), 6% (180d). Yield is funded entirely by lending interest — not by inflating supply.</p>
         </div>
         <div class="feature">
           <div class="feature-icon">&#128737;</div>
@@ -552,7 +552,7 @@
           <div class="step-num">2</div>
           <div class="step-content">
             <h3>Fund with Crypto</h3>
-            <p>Swap BTC or XMR for USDm at live market rates. Your crypto is converted at the median price from multiple independent oracles, locking in your rate at swap creation.</p>
+            <p>Swap BTC or XMR for USDm at live market rates. The protocol mints at a 1.5:1 ratio — deposit $150 of crypto to receive 100 USDm. This keeps every USDm overcollateralized from the moment it exists.</p>
           </div>
         </div>
         <div class="step">
@@ -662,7 +662,7 @@
         </div>
         <div class="faq-item">
           <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">How is the $1 peg maintained?<span class="faq-arrow">+</span></button>
-          <div class="faq-a">The peg is enforced by the protocol's consensus rules. On-chain conversions between USDm and other assets use median pricing from multiple independent oracles. The rate is locked at swap creation, ensuring you always receive $1 worth of value per USDm. No centralized treasury or reserve is needed.</div>
+          <div class="faq-a">Every USDm is backed by at least $1.50 of BTC or XMR held in the protocol's reserve wallets. Swaps mint at a 1.5:1 ratio (deposit $150 → receive 100 USDm), so the reserve grows with every entry. Auto-mining is gated by reserve health and halts if the ratio would drop below 150%. Staking yield is funded only by loan interest — reserves are never drawn down to pay yields.</div>
         </div>
         <div class="faq-item">
           <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">What makes FCMP++ better than ring signatures?<span class="faq-arrow">+</span></button>
@@ -682,7 +682,7 @@
         </div>
         <div class="faq-item">
           <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I swap BTC or XMR for USDm?<span class="faq-arrow">+</span></button>
-          <div class="faq-a">Open the wallet (browser or desktop), go to the Swap tab, select the asset you want to convert (BTC or XMR), enter the amount, and confirm. The swap uses median oracle pricing and is processed on-chain. Your rate is locked at the moment of swap creation.</div>
+          <div class="faq-a">Open the wallet (browser or desktop), go to the Swap tab, select BTC or XMR, enter the amount, and confirm. The protocol mints at a 1.5:1 ratio — for every $1.50 of crypto you deposit, you receive 1 USDm. This overcollateralizes every mint from creation. Your rate is locked at the moment of swap creation using median oracle pricing.</div>
         </div>
         <div class="faq-item">
           <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Can I run my own node?<span class="faq-arrow">+</span></button>

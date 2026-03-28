@@ -69,11 +69,11 @@
         <tr><td>Purpose</td><td>Private digital cash</td><td>Private, stable-value digital dollar — a complement to XMR</td></tr>
         <tr><td>Privacy Tech</td><td>Ring signatures, stealth addresses, RingCT</td><td>FCMP++ — building on Monero's privacy research to prove membership in the full UTXO set</td></tr>
         <tr><td>Collateralization</td><td>Market-driven value</td><td>Over-collateralized by BTC + XMR reserves (>150% ratio enforced)</td></tr>
-        <tr><td>Block Time</td><td>~2 minutes</td><td>~60 seconds</td></tr>
-        <tr><td>Emission</td><td>Tail emission (0.6 XMR/block)</td><td>Fee-based: 25% of avg on-chain fees become block rewards, guaranteeing reserve ratio above 150%</td></tr>
+        <tr><td>Block Time</td><td>~2 minutes</td><td>~120 seconds</td></tr>
+        <tr><td>Emission</td><td>Tail emission (0.6 XMR/block)</td><td>Fixed 30 USDm/block — auto-mining gated by reserve health. Mining only proceeds when BTC+XMR reserve ≥ 150% of all minted USDm</td></tr>
         <tr><td>Atomic Swaps</td><td>XMR ↔ BTC (external tools)</td><td>Built-in BTC/XMR ↔ USDm swaps with on-chain burn/mint</td></tr>
-        <tr><td>Staking</td><td>—</td><td>Tiered: 1.5% – 6% APR, funded by swap fees and lending interest</td></tr>
-        <tr><td>Lending</td><td>—</td><td>Collateralized lending: borrow USDm against BTC/XMR</td></tr>
+        <tr><td>Staking</td><td>—</td><td>Tiered APR funded by lending interest: 1.5% (no lock) · 3.0% (30d) · 4.5% (90d) · 6.0% (180d). Yield only paid when loan interest pool has sufficient balance</td></tr>
+        <tr><td>Lending</td><td>—</td><td>Borrow USDm against BTC (max 60% LTV, liquidation at 65%) or XMR (max 55% LTV, liquidation at 65%). Both keep collateral above 150% at all times</td></tr>
         <tr><td>Consensus</td><td>RandomX (CPU mining)</td><td>RandomX (CPU mining) — same algorithm, separate network</td></tr>
         <tr><td>Address Prefix</td><td>4 (mainnet)</td><td>M (mainnet)</td></tr>
         <tr><td>Fork Origin</td><td>Original CryptoNote</td><td>Haven Protocol → Monero fork + FCMP++ and stablecoin extensions</td></tr>
@@ -82,9 +82,10 @@
 
     <h2>How MoneroUSD Maintains the Peg</h2>
     <div class="grid">
-      <div class="card"><h3>Reserve Backing</h3><p>BTC and XMR held in on-chain reserve addresses. Ratio must exceed 150% of all minted USDm.</p></div>
-      <div class="card"><h3>Burn & Mint</h3><p>USDm is minted when crypto is deposited, and burned (sent to provably-unspendable address) when redeemed for crypto.</p></div>
-      <div class="card"><h3>Fee Revenue</h3><p>Swap fees: 80% reserves, 15% yield pool, 5% operations. Lending interest: 50% reserves, 40% yield, 10% ops.</p></div>
+      <div class="card"><h3>Reserve Backing</h3><p>BTC and XMR held in protocol reserve wallets — these wallets ARE the treasury. Total reserve value must exceed 150% of all minted USDm at all times.</p></div>
+      <div class="card"><h3>1.5:1 Swap Ratio</h3><p>Deposit $150 in BTC or XMR → receive 100 USDm. Every swap entry instantly grows the reserve above 150%. USDm can always be redeemed for the underlying crypto.</p></div>
+      <div class="card"><h3>Mining Gate</h3><p>Auto-mining is gated by reserve health. Block rewards only issue when reserve ≥ 150% of supply. Mining halts automatically if the ratio would drop below the floor.</p></div>
+      <div class="card"><h3>Fee Revenue</h3><p>Swap fees (0.5%): 80% reserves, 15% yield pool, 5% ops. Lending interest: 40% yield pool, remainder to reserves. Staking yield only paid from accumulated loan interest — never touches reserves.</p></div>
     </div>
 
     <h2>FCMP++ vs Ring Signatures</h2>
