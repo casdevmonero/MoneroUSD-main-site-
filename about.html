@@ -43,7 +43,21 @@
 
     footer { border-top: 1px solid var(--border); padding: 24px 28px; text-align: center; color: var(--muted); font-size: 0.8rem; }
 
+    .nav-hamburger { display: none; flex-direction: column; justify-content: center; align-items: center; gap: 5px; width: 40px; height: 40px; cursor: pointer; background: none; border: none; padding: 4px; }
+    .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: all 0.25s; }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav-mobile-menu { display: none; flex-direction: column; position: absolute; top: 68px; left: 0; right: 0; background: rgba(10,10,10,0.97); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,102,0,0.15); padding: 8px 0 16px; z-index: 99; }
+    .nav-mobile-menu.open { display: flex; }
+    .nav-mobile-menu a { color: var(--muted); text-decoration: none; font-size: 1rem; font-weight: 500; padding: 14px 28px; border-bottom: 1px solid rgba(255,255,255,0.04); transition: color 0.2s, background 0.2s; }
+    .nav-mobile-menu a:last-child { border-bottom: none; }
+    .nav-mobile-menu a:hover { color: var(--text); background: rgba(255,102,0,0.05); text-decoration: none; }
+    .nav-mobile-menu .btn-wallet-mobile { margin: 12px 28px 0; background: var(--orange); color: #fff; border-radius: 10px; text-align: center; padding: 13px 24px; font-weight: 600; border-bottom: none; }
+    .nav-mobile-menu .btn-wallet-mobile:hover { background: #e55a00; }
+
     @media (max-width: 640px) { td:first-child { width: auto; white-space: normal; } .grid { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { .nav-links { display: none; } .nav-hamburger { display: flex; } }
   </style>
 </head>
 <body>
@@ -55,6 +69,14 @@
         <a href="/run-node.html">Run a Node</a>
         <a href="/wallet">Open Wallet</a>
       </div>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="nav-mobile-menu" id="navMobileMenu">
+      <a href="/">Home</a>
+      <a href="/run-node.html">Run a Node</a>
+      <a href="/wallet" class="btn-wallet-mobile">Open Wallet</a>
     </div>
   </nav>
 
@@ -96,5 +118,24 @@
   </div>
 
   <footer><p>MoneroUSD &copy; 2026 — <a href="/">Home</a></p></footer>
+<script>
+(function() {
+  var btn = document.getElementById('navHamburger');
+  var menu = document.getElementById('navMobileMenu');
+  if (!btn || !menu) return;
+  btn.addEventListener('click', function() {
+    var open = menu.classList.toggle('open');
+    btn.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open);
+  });
+  menu.querySelectorAll('a').forEach(function(a) {
+    a.addEventListener('click', function() {
+      menu.classList.remove('open');
+      btn.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    });
+  });
+})();
+</script>
 </body>
 </html>
