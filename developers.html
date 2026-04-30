@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Developer Guide — MoneroUSD</title>
+  <meta name="description" content="Build on MoneroUSD: provider API, token creation, NFTs, Ion Swap pool integration, wallet-rpc reference, and privacy best practices." />
+  <style>
+    @font-face { font-family: 'Outfit'; src: url('/fonts/outfit-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+    @font-face { font-family: 'Outfit'; src: url('/fonts/outfit-600.woff2') format('woff2'); font-weight: 600; font-display: swap; }
+    @font-face { font-family: 'Outfit'; src: url('/fonts/outfit-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+    @font-face { font-family: 'JetBrains Mono'; src: url('/fonts/jetbrainsmono-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+    @font-face { font-family: 'JetBrains Mono'; src: url('/fonts/jetbrainsmono-600.woff2') format('woff2'); font-weight: 600; font-display: swap; }
+
+    :root {
+      --orange: #FF6600;
+      --orange-glow: rgba(255,102,0,0.3);
+      --orange-dim: rgba(255,102,0,0.12);
+      --bg: #0a0a0a;
+      --surface: #111;
+      --card: #161616;
+      --border: #222;
+      --text: #eaeaea;
+      --muted: #888;
+      --green: #22c55e;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); line-height: 1.75; }
+    a { color: var(--orange); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    nav { background: rgba(10,10,10,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,102,0,0.1); padding: 0 28px; position: sticky; top: 0; z-index: 100; }
+    .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 68px; }
+    .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); font-weight: 700; font-size: 1.2rem; }
+    .nav-logo img { height: 36px; width: 36px; }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { color: var(--muted); font-size: 0.9rem; font-weight: 500; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-links a.active { color: var(--orange); }
+    .nav-hamburger { display: none; flex-direction: column; justify-content: center; align-items: center; gap: 5px; width: 40px; height: 40px; cursor: pointer; background: none; border: none; padding: 4px; }
+    .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: all 0.25s; }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav-mobile-menu { display: none; flex-direction: column; position: absolute; top: 68px; left: 0; right: 0; background: rgba(10,10,10,0.97); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,102,0,0.15); padding: 8px 0 16px; z-index: 99; }
+    .nav-mobile-menu.open { display: flex; }
+    .nav-mobile-menu a { color: var(--muted); text-decoration: none; font-size: 1rem; font-weight: 500; padding: 14px 28px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .nav-mobile-menu a:hover { color: var(--text); background: rgba(255,102,0,0.05); text-decoration: none; }
+
+    .wp-hero { text-align: center; padding: 80px 28px 48px; position: relative; overflow: hidden; }
+    .wp-hero::before { content: ''; position: absolute; top: -60%; left: 50%; transform: translateX(-50%); width: 600px; height: 600px; background: radial-gradient(circle, var(--orange-glow) 0%, transparent 70%); opacity: 0.15; pointer-events: none; }
+    .wp-logo { width: 80px; height: 80px; margin: 0 auto 24px; filter: drop-shadow(0 0 30px rgba(255,102,0,0.3)); }
+    .wp-title { font-size: 2.6rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 12px; }
+    .wp-title span { color: var(--orange); }
+    .wp-version { color: var(--muted); font-size: 0.95rem; margin-bottom: 8px; }
+
+    .toc { max-width: 480px; margin: 0 auto 64px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px 32px; }
+    .toc h2 { font-size: 1rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; border: none; padding: 0; }
+    .toc ol { list-style: none; counter-reset: toc; }
+    .toc li { counter-increment: toc; }
+    .toc li a { display: flex; align-items: center; padding: 8px 0; color: var(--text); font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .toc li a:hover { color: var(--orange); text-decoration: none; }
+    .toc li a::before { content: counter(toc) "."; color: var(--orange); font-weight: 700; width: 28px; flex-shrink: 0; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+    .toc li:last-child a { border-bottom: none; }
+
+    .wp-content { max-width: 820px; margin: 0 auto; padding: 0 28px 80px; }
+    .wp-content h2 { font-size: 1.6rem; font-weight: 700; color: var(--orange); margin: 56px 0 16px; padding-top: 24px; border-top: 1px solid var(--border); }
+    .wp-content h2:first-of-type { border-top: none; margin-top: 0; }
+    .wp-content h3 { font-size: 1.15rem; font-weight: 600; margin: 32px 0 12px; color: var(--text); }
+    .wp-content p { margin-bottom: 16px; color: var(--text); font-size: 0.98rem; }
+    .wp-content table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; }
+    .wp-content th { text-align: left; padding: 10px 14px; font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); background: var(--card); }
+    .wp-content td { padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 0.92rem; }
+    .wp-content tr:hover { background: rgba(255,102,0,0.03); }
+    .wp-note { background: rgba(255,102,0,0.06); border-left: 3px solid var(--orange); padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 16px 0 24px; font-size: 0.92rem; }
+    .wp-note strong { color: var(--orange); }
+    .wp-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 16px 0 24px; }
+    .wp-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .wp-card h4 { font-size: 0.82rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .wp-card .val { font-size: 1.3rem; font-weight: 700; color: var(--orange); font-family: 'JetBrains Mono', monospace; }
+    .wp-card p { font-size: 0.88rem; color: var(--muted); margin-top: 4px; margin-bottom: 0; }
+    .wp-diagram { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin: 16px 0 24px; text-align: center; }
+    .wp-diagram .flow { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; font-size: 0.9rem; }
+    .wp-diagram .node { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; font-weight: 600; }
+    .wp-diagram .node.orange { border-color: var(--orange); color: var(--orange); background: rgba(255,102,0,0.06); }
+    .wp-diagram .arrow { color: var(--muted); font-size: 1.2rem; }
+    .wp-diagram .caption { color: var(--muted); font-size: 0.82rem; margin-top: 12px; }
+    ul.wp-list { margin: 8px 0 20px 20px; }
+    ul.wp-list li { margin-bottom: 8px; font-size: 0.95rem; }
+    ul.wp-list li::marker { color: var(--orange); }
+    pre.code-block { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin: 12px 0 20px; overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; line-height: 1.6; color: var(--text); }
+    pre.code-block .kw { color: var(--orange); }
+    pre.code-block .str { color: var(--green); }
+    pre.code-block .cmt { color: var(--muted); }
+    footer { border-top: 1px solid var(--border); padding: 24px 28px; text-align: center; color: var(--muted); font-size: 0.8rem; }
+    @media (max-width: 640px) { .wp-title { font-size: 1.8rem; } .wp-card-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { .nav-links { display: none; } .nav-hamburger { display: flex; } }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-logo"><img src="/logo.svg" alt="" />MoneroUSD</a>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">Details</a>
+        <a href="/whitepaper.html">Whitepaper</a>
+        <a href="/run-node.html">Run a Node</a>
+        <a href="https://ion.monerousd.org" target="_blank" rel="noopener noreferrer">Ion Swap</a>
+        <a href="/developers.html" class="active">Developers</a>
+      </div>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="nav-mobile-menu" id="navMobileMenu">
+      <a href="/">Home</a>
+      <a href="/about.html">Details</a>
+      <a href="/whitepaper.html">Whitepaper</a>
+      <a href="/run-node.html">Run a Node</a>
+      <a href="https://ion.monerousd.org" target="_blank" rel="noopener noreferrer">Ion Swap</a>
+      <a href="/developers.html">Developers</a>
+    </div>
+  </nav>
+
+  <div class="wp-hero">
+    <img src="/logo.svg" alt="MoneroUSD" class="wp-logo" />
+    <h1 class="wp-title">Developer <span>Guide</span></h1>
+    <p class="wp-version">Build on MoneroUSD &mdash; provider API, tokens, NFTs, swaps, and privacy-first integration</p>
+  </div>
+
+  <div class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#getting-started">Getting Started</a></li>
+      <li><a href="#provider-api">Provider API Reference</a></li>
+      <li><a href="#token-creation">Token Creation (USDm-T1)</a></li>
+      <li><a href="#shadow-nfts">Shadow NFTs (USDm-N1)</a></li>
+      <li><a href="#dark-contracts">Dark Contracts (DarkSolidity)</a></li>
+      <li><a href="#ion-swap">Ion Swap Pool Integration</a></li>
+      <li><a href="#activity-api">Activity API (v1)</a></li>
+      <li><a href="#wallet-rpc">Wallet-RPC Reference</a></li>
+      <li><a href="#privacy">Privacy Best Practices</a></li>
+      <li><a href="#examples">Example Projects</a></li>
+    </ol>
+  </div>
+
+  <div class="wp-content">
+
+    <h2 id="getting-started">1. Getting Started</h2>
+    <p>MoneroUSD dApps interact with the blockchain through <code>window.monerousd</code>, a provider API injected by the desktop wallet or browser extension. This is analogous to <code>window.ethereum</code> for Ethereum dApps.</p>
+
+    <pre class="code-block"><span class="cmt">// Check if the provider is available</span>
+<span class="kw">if</span> (<span class="kw">window</span>.monerousd) {
+  console.log(<span class="str">'MoneroUSD provider detected'</span>);
+  <span class="kw">const</span> result = <span class="kw">await</span> window.monerousd.connect();
+  console.log(<span class="str">'Connected:'</span>, result.address);
+} <span class="kw">else</span> {
+  console.log(<span class="str">'Please install the MoneroUSD wallet'</span>);
+}</pre>
+
+    <div class="wp-note"><strong>Key difference from Ethereum:</strong> Every dApp gets a fresh per-origin stealth subaddress. Your main account address is never exposed. The wallet generates a unique subaddress for each domain via <code>~/.monerousd/dapp-origins.json</code>.</div>
+
+    <div class="wp-card-grid">
+      <div class="wp-card"><h4>Desktop Wallet</h4><p>Download from <a href="/#download">monerousd.org</a>. Provider is auto-injected into the built-in dApp browser.</p></div>
+      <div class="wp-card"><h4>Browser Extension</h4><p>Chrome/Firefox extension injects <code>window.monerousd</code> into any website via a companion auth proxy on port 27751.</p></div>
+      <div class="wp-card"><h4>Language</h4><p>JavaScript (frontend). Any language for backend via wallet-rpc JSON-RPC.</p></div>
+      <div class="wp-card"><h4>Privacy</h4><p>FCMP++ at consensus layer. Amounts, senders, recipients, and asset types are all hidden by default.</p></div>
+    </div>
+
+    <h2 id="provider-api">2. Provider API Reference</h2>
+    <p>The <code>window.monerousd</code> provider exposes read and write methods. Write methods trigger a biometric/passphrase approval popup in the wallet.</p>
+
+    <h3>Connection</h3>
+    <table>
+      <thead><tr><th>Method</th><th>Returns</th><th>Gate</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>connect()</code></td><td><code>{ address }</code></td><td>Consent popup</td><td>Initiates connection. Shows a consent sheet listing requested permissions, then delegates to the wallet's approval popup.</td></tr>
+        <tr><td><code>isConnected()</code></td><td><code>boolean</code></td><td>None</td><td>Returns true if the dApp is currently connected.</td></tr>
+        <tr><td><code>disconnect()</code></td><td><code>void</code></td><td>None</td><td>Tears down the connection for this origin.</td></tr>
+        <tr><td><code>getAddress()</code></td><td><code>string</code></td><td>None</td><td>Returns the per-origin stealth subaddress.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Balance &amp; Assets</h3>
+    <table>
+      <thead><tr><th>Method</th><th>Returns</th><th>Gate</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>getBalance({ asset_type })</code></td><td><code>{ balance, unlocked_balance }</code></td><td>None</td><td>Returns atomic balance for a specific asset. Default: <code>'USDm'</code>.</td></tr>
+        <tr><td><code>listAssets()</code></td><td><code>[{ id, name, symbol, decimals, balance, isNFT }]</code></td><td>None</td><td>Lists all assets held by the wallet.</td></tr>
+        <tr><td><code>getAssetBalance(assetId)</code></td><td><code>{ balance, unlocked_balance, asset_type }</code></td><td>None</td><td>Returns balance for a specific asset ID.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Transfers</h3>
+    <table>
+      <thead><tr><th>Method</th><th>Returns</th><th>Gate</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>transfer({ destinations, asset_type, memo })</code></td><td><code>{ txid, fee }</code></td><td>Biometric</td><td>Sends USDm or any asset. Each destination: <code>{ address, amount }</code>.</td></tr>
+        <tr><td><code>transferNFT({ nftId, toAddress })</code></td><td><code>{ txId }</code></td><td>Biometric</td><td>Transfers an NFT to another address.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Token &amp; NFT Creation</h3>
+    <table>
+      <thead><tr><th>Method</th><th>Returns</th><th>Gate</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>createToken({ name, symbol, maxSupply, decimals, supplyRule })</code></td><td><code>{ tokenId, creationTxId, bondPaid }</code></td><td>Biometric</td><td>Creates a new USDm-T1 fungible token. Bond is non-refundable.</td></tr>
+        <tr><td><code>mintTokenSupply({ tokenId, amount })</code></td><td><code>{ txId, feePaid }</code></td><td>Biometric</td><td>Mints additional supply for mintable tokens (50 bps fee).</td></tr>
+        <tr><td><code>mintNFT({ name, description, contentHash })</code></td><td><code>{ nftId, creationTxId, bondPaid }</code></td><td>Biometric</td><td>Creates a Shadow NFT (USDm-N1). Bond: 10+ USDm.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Proofs &amp; View Keys</h3>
+    <table>
+      <thead><tr><th>Method</th><th>Returns</th><th>Gate</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>proveOwnership({ assetId, challenge })</code></td><td><code>{ proof }</code></td><td>Spend key</td><td>Generates an FCMP++ membership proof proving you own the asset.</td></tr>
+        <tr><td><code>proveNFTOwnership({ nftId, challenge })</code></td><td><code>{ proof }</code></td><td>Spend key</td><td>Generates an FCMP++ membership proof for a specific NFT.</td></tr>
+        <tr><td><code>shareViewKey({ scope, id, recipientPubKey })</code></td><td><code>{ encryptedViewKey }</code></td><td>Biometric</td><td>Shares a read-only view key with a specific recipient.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Events</h3>
+    <pre class="code-block">window.monerousd.on(<span class="str">'connect'</span>, () =&gt; console.log(<span class="str">'Connected'</span>));
+window.monerousd.on(<span class="str">'disconnect'</span>, () =&gt; console.log(<span class="str">'Disconnected'</span>));
+window.monerousd.on(<span class="str">'addressChanged'</span>, (addr) =&gt; console.log(<span class="str">'New address:'</span>, addr));
+window.monerousd.on(<span class="str">'chainChanged'</span>, (chain) =&gt; console.log(<span class="str">'Chain:'</span>, chain));</pre>
+
+    <h2 id="token-creation">3. Token Creation (USDm-T1)</h2>
+    <p>USDm-T1 tokens are native protocol assets that inherit FCMP++ privacy. They are not smart contracts &mdash; they are processed at the daemon level, making amounts, senders, recipients, and even the token type hidden from observers.</p>
+
+    <h3>Token Addresses (<code>ion1_</code>)</h3>
+    <p>Every token is assigned a unique <code>ion1_</code> address at creation &mdash; analogous to a contract address on Ethereum, but privacy-preserving. The address is derived from BLAKE2b-256 (CryptoNote-native) and is 69 characters long.</p>
+
+    <table>
+      <thead><tr><th>Property</th><th>Value</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Prefix</td><td><code>ion1_</code></td><td>Version byte 1 for future-proofing</td></tr>
+        <tr><td>Hash</td><td>BLAKE2b-512 &rarr; 256 bits</td><td>CryptoNote-native, same as key derivation</td></tr>
+        <tr><td>Length</td><td>69 characters</td><td>5-char prefix + 64 hex digits</td></tr>
+        <tr><td>Verified tokens</td><td>Deterministic</td><td><code>BLAKE2b("MoneroUSD_protocol_asset:" + symbol)</code></td></tr>
+        <tr><td>Custom tokens</td><td>Stealth-derived</td><td><code>BLAKE2b(creatorStealth + randomSalt)</code></td></tr>
+      </tbody>
+    </table>
+
+    <div class="wp-note"><strong>Privacy guarantee:</strong> Custom token addresses are derived from the creator&rsquo;s stealth key + random salt. The address reveals neither the creator&rsquo;s identity nor the token name. Multiple tokens by the same creator have unlinked addresses. Token addresses are searchable and copyable in the <a href="https://explorer.monerousd.org" target="_blank">block explorer</a>.</div>
+
+    <h3>Token Properties</h3>
+    <table>
+      <thead><tr><th>Property</th><th>Constraints</th><th>Immutable</th></tr></thead>
+      <tbody>
+        <tr><td><code>name</code></td><td>Max 32 characters</td><td>Yes</td></tr>
+        <tr><td><code>symbol</code></td><td>3-6 alphanumeric characters</td><td>Yes</td></tr>
+        <tr><td><code>decimals</code></td><td>0-18</td><td>Yes</td></tr>
+        <tr><td><code>maxSupply</code></td><td>Hard cap (0 = unlimited)</td><td>Yes</td></tr>
+        <tr><td><code>supplyRule</code></td><td><code>fixed</code> | <code>mintable</code> | <code>deflationary</code></td><td>Yes</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Creation Bond</h3>
+    <div class="wp-formula">
+      <div class="label">Token Creation Bond</div>
+      bond_usdm = 100 &times; (1 + active_tokens / 100) + metadata_bytes &times; 0.001
+    </div>
+    <div class="wp-note"><strong>Non-refundable.</strong> The bond is burned through the Protocol Fee Split: 60% to reserves, 30% to POL, 10% to bounty. This prevents spam while directly strengthening USDm backing.</div>
+
+    <h3>Supply Rules</h3>
+    <div class="wp-diagram">
+      <div class="flow">
+        <div class="node orange">Fixed</div>
+        <div class="arrow">&rarr;</div>
+        <div class="node">All supply minted at creation. No further minting.</div>
+      </div>
+      <div class="flow" style="margin-top:8px">
+        <div class="node orange">Mintable</div>
+        <div class="arrow">&rarr;</div>
+        <div class="node">Creator can mint more (50 bps fee each time) up to maxSupply.</div>
+      </div>
+      <div class="flow" style="margin-top:8px">
+        <div class="node orange">Deflationary</div>
+        <div class="arrow">&rarr;</div>
+        <div class="node">All minted at creation. Burns only after that.</div>
+      </div>
+    </div>
+
+    <h3>Example: Create a Token</h3>
+    <pre class="code-block"><span class="kw">const</span> result = <span class="kw">await</span> window.monerousd.createToken({
+  name: <span class="str">'My Token'</span>,
+  symbol: <span class="str">'MTK'</span>,
+  decimals: 8,
+  maxSupply: <span class="str">'1000000'</span>,
+  supplyRule: <span class="str">'fixed'</span>,
+  description: <span class="str">'A private fungible token on MoneroUSD'</span>,
+  metadataPublic: <span class="kw">true</span>,
+});
+console.log(<span class="str">'Token address:'</span>, result.tokenId);
+<span class="cmt">// → "ion1_a7f3b2c1...4e8d9f0a" (69-char BLAKE2b-derived address)</span>
+console.log(<span class="str">'Bond paid:'</span>, result.bondPaid, <span class="str">'USDm'</span>);</pre>
+
+    <h3>USDm Pairing Rule</h3>
+    <div class="wp-note"><strong>V1 constraint:</strong> All custom token pools must pair against USDm. This forces every trade to route through USDm, concentrating liquidity, maximizing fee capture, and making USDm the settlement layer for the entire ecosystem. <code>TOKEN/TOKEN</code> direct pools will be enabled post-launch once sufficient USDm pool depth exists.</div>
+
+    <h2 id="shadow-nfts">4. Shadow NFTs (USDm-N1)</h2>
+    <p>Shadow NFTs are tokens with <code>maxSupply=1, decimals=0</code>. On MoneroUSD, an NFT output is indistinguishable from any other output &mdash; FCMP++ hides the owner, amount, and asset type. There is no <code>ownerOf()</code> function. Ownership is provable only by the holder via an FCMP++ membership proof.</p>
+
+    <h3>Mint Bond</h3>
+    <div class="wp-formula">
+      <div class="label">NFT Mint Bond</div>
+      nft_bond = 10 + metadata_bytes &times; 0.001 USDm
+    </div>
+
+    <h3>Royalties</h3>
+    <p>Every secondary sale deducts <strong>200 bps (2%)</strong> automatically at the settlement layer. Royalties are routed through the fee split: 50% reserves, 30% POL, 20% bounty. Creator receives royalty at their stealth address (hidden from observers).</p>
+
+    <h3>Example: Mint and Prove Ownership</h3>
+    <pre class="code-block"><span class="cmt">// Mint an NFT</span>
+<span class="kw">const</span> nft = <span class="kw">await</span> window.monerousd.mintNFT({
+  name: <span class="str">'Private Art #1'</span>,
+  description: <span class="str">'View-key-gated digital art'</span>,
+  contentHash: <span class="str">'QmYwAPJzv5CZsnA...'</span>, <span class="cmt">// IPFS hash</span>
+});
+console.log(<span class="str">'NFT ID:'</span>, nft.nftId);
+
+<span class="cmt">// Later: prove you own it (without revealing identity)</span>
+<span class="kw">const</span> proof = <span class="kw">await</span> window.monerousd.proveNFTOwnership({
+  nftId: nft.nftId,
+  challenge: <span class="str">'random-challenge-from-verifier'</span>,
+});
+<span class="cmt">// Send `proof` to the verifier. They can confirm</span>
+<span class="cmt">// ownership without learning your identity.</span></pre>
+
+    <h2 id="dark-contracts">5. Dark Contracts (DarkSolidity)</h2>
+    <p>Dark Contracts extend MoneroUSD's attestation layer into a programmable virtual machine. You write in <strong>DarkSolidity (DSOL)</strong> &mdash; a Solidity-dialect language with privacy-native types &mdash; compile to <code>.dc</code> bytecode, and deploy via a <code>DC_DEPLOY</code> attestation. The contract executes in the <strong>DarkVM</strong>, a pure-JavaScript <code>BigInt</code> stack machine hosted identically by every indexer operator. Every mutation lands in the same <code>pool_events</code> log the base layer already anchors to the USDm chain.</p>
+
+    <div class="wp-note"><strong>When to use Dark Contracts vs. the base layer.</strong> Token creation, LP mint/burn, NFT mint, bridge wrap/unwrap, limit order, DCA, and savings are all first-class base-layer operations &mdash; reach them through the provider API for the lowest fees and fastest confirmation. Reach for Dark Contracts when you need <em>custom logic</em>: a private ERC-20 analogue with a non-standard transfer rule, a blind auction, a pausable wrapper, a cross-contract router, a DSOL-native DAO. The base-layer ops can be invoked from inside a Dark Contract via the syscall table.</div>
+
+    <h3>5.1 The life of a Dark Contract call</h3>
+    <div class="wp-diagram">
+      <div class="flow">
+        <div class="node">dsolc compile</div>
+        <div class="arrow">&rarr;</div>
+        <div class="node orange">DC_DEPLOY</div>
+        <div class="arrow">&rarr;</div>
+        <div class="node">DC_CALL_COMMIT</div>
+        <div class="arrow">&rarr;</div>
+        <div class="node orange">DC_CALL_REVEAL</div>
+        <div class="arrow">&rarr;</div>
+        <div class="node">DarkVM executes</div>
+      </div>
+      <div class="caption">Deploy once, then commit at block N and reveal at block N+2. The indexer&rsquo;s <code>deriveDarkState</code> pass picks up state diffs deterministically; the explorer decodes arguments against <code>abi.json</code>.</div>
+    </div>
+
+    <h3>5.2 A production-ready private ERC-20 in DSOL</h3>
+    <pre class="code-block"><span class="kw">dark contract</span> Erc20Private <span class="kw">is</span> Ownable {
+  <span class="kw">private mapping</span>(stealth =&gt; uint64) balances;
+  <span class="kw">public</span> string symbol;
+  <span class="kw">public</span> uint64 totalSupply;
+
+  <span class="kw">constructor</span>(string sym, uint64 supply) {
+    symbol = sym;
+    totalSupply = supply;
+    balances[msg.sender] = supply;
+  }
+
+  <span class="kw">@batch</span>
+  <span class="kw">entry</span> transfer(stealth to, uint64 amount) {
+    <span class="kw">require</span>(amount &gt; 0, <span class="str">"AMOUNT_ZERO"</span>);
+    <span class="kw">require</span>(to != msg.sender, <span class="str">"SELF_TRANSFER"</span>);
+    <span class="kw">require</span>(balances[msg.sender] &gt;= amount, <span class="str">"INSUFFICIENT"</span>);
+    balances[msg.sender] = balances[msg.sender] - amount;
+    balances[to] = balances[to] + amount;
+    <span class="kw">emit encrypted</span> Transfer(msg.sender, to, amount);
+  }
+
+  <span class="kw">@direct</span>
+  <span class="kw">entry</span> balanceOf(stealth who) <span class="kw">returns</span> (uint64 <span class="kw">when revealed</span>) {
+    <span class="kw">return</span> balances[who];
+  }
+}</pre>
+
+    <div class="wp-note"><strong>The three <code>require</code> guards on <code>transfer</code> are mandatory.</strong> <code>amount &gt; 0</code> rejects no-op gas-burn calls, <code>to != msg.sender</code> rejects no-op self-transfers, and the balance check rejects overdrafts. The compiler does not insert these for you. v1.2.182&apos;s production-readiness sweep made them mandatory across every transfer entrypoint in the standard library; any contract that ships without them is a regression.</div>
+
+    <p>Four language constructs do most of the privacy work:</p>
+    <table>
+      <thead><tr><th>Construct</th><th>Behaviour</th></tr></thead>
+      <tbody>
+        <tr><td><code>private</code> field</td><td>Pedersen-committed on every write. Never rendered in plaintext by any public API.</td></tr>
+        <tr><td><code>@batch</code> entry</td><td>Compiler emits a <code>REQUIRE_COMMIT_REVEAL</code> preamble. A direct <code>DC_CALL</code> without a prior commit is rejected with <code>DC_MUST_COMMIT</code>.</td></tr>
+        <tr><td><code>emit encrypted</code></td><td>Event payload is AES-256-GCM sealed to <code>HKDF(viewkeyHash, contractId, eventName)</code>. Only the caller decrypts.</td></tr>
+        <tr><td><code>when revealed</code></td><td>Return type compiles to open-and-prove: auto-generated Bulletproofs++ range proof (576 bytes when <code>BPPP_REAL_SOUNDNESS=1</code>), value encrypted to <code>msg.sender</code>.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>5.3 Resource discipline</h3>
+    <div class="wp-card-grid">
+      <div class="wp-card"><h4>Flat fee</h4><div class="val">0.1 USDm</div><p>Per call. No per-opcode gas market &mdash; deterministic resource ceilings simplify multi-operator consensus.</p></div>
+      <div class="wp-card"><h4>Step limit</h4><div class="val">1,000,000</div><p>Opcodes per call. Overrun aborts the call, rolls back state, keeps the fee (DC-2).</p></div>
+      <div class="wp-card"><h4>Memory</h4><div class="val">256 KB</div><p>Combined stack + heap. Hard cap (DC-3).</p></div>
+      <div class="wp-card"><h4>Deployment bond</h4><div class="val">Non-refundable</div><p>Same path as TOKEN_CREATE (DC-10). Routed through the Protocol Fee Split.</p></div>
+    </div>
+
+    <h3>5.4 Key invariants to design around</h3>
+    <table>
+      <thead><tr><th>#</th><th>Rule</th><th>What it means for your contract</th></tr></thead>
+      <tbody>
+        <tr><td>DC-1</td><td>Deterministic execution</td><td>Your bytecode must not read clocks, randomness, or float. All math is <code>BigInt</code>.</td></tr>
+        <tr><td>DC-4</td><td>Commit-reveal for private mutations</td><td>Any entry that writes a <code>private</code> field must be tagged <code>@batch</code>. The compiler enforces this.</td></tr>
+        <tr><td>DC-7</td><td>Syscall allowlist</td><td>Only the frozen host-syscall table is callable. Unknown codes abort with <code>DC_SYSCALL_UNKNOWN</code>.</td></tr>
+        <tr><td>DC-11</td><td>No transparent call path</td><td>You cannot mutate contract state through an HTTP route. Every write flows through an attestation.</td></tr>
+        <tr><td>DC-13</td><td>Bytecode immutable</td><td>Upgrades flow through a nullifier-gated proxy pattern, not <code>UPDATE</code>. Plan proxies in from day one.</td></tr>
+        <tr><td>DC-14</td><td>Compile-time privacy analysis</td><td>Writing a <code>private</code> value into a <code>public</code> sink without <code>when revealed</code> is a compile error.</td></tr>
+        <tr><td>DC-15</td><td>Wallet decodes before approval</td><td>Ship a clean <code>abi.json</code> with your contract. Without one, the wallet shows a loud warning and users cannot read what they are signing.</td></tr>
+      </tbody>
+    </table>
+    <p>The full DC-1&hellip;DC-15 rulebook is documented in the runtime source and the <a href="https://github.com/monerousd" target="_blank" rel="noopener noreferrer">monerousd-explorer</a> protocol spec (<code>PROTOCOL-DC-V1.md</code>).</p>
+
+    <h3>5.5 Inheritance, modifiers, and tail-calls (Phase&nbsp;3)</h3>
+    <p>Phase 3 of DSOL adds Solidity-familiar constructs:</p>
+    <ul class="wp-list">
+      <li><strong>Multiple inheritance</strong> via <code>dark contract Child is Parent1, Parent2 { &hellip; }</code>. Parents are linearized left-to-right (C3-style). Child declarations override parents by name; constructor bodies concatenate so parent initialization runs before child initialization.</li>
+      <li><strong>Modifiers</strong> via <code>modifier onlyOwner(stealth o) { require(msg.sender == o); _; }</code>. Per-entry invocations expand inline at the callsite; the <code>_;</code> placeholder expands to the original entry body.</li>
+      <li><strong>Inter-contract tail-calls</strong> via <code>syscall(EXT_CALL_TAIL_V1, { contractId, entrypoint, argv })</code>. The callee executes with the remaining step budget and no return-to-caller &mdash; reentrancy is impossible by construction because there is no caller frame to re-enter.</li>
+    </ul>
+
+    <h3>5.6 Deploying and calling a contract</h3>
+    <pre class="code-block"><span class="cmt">// 1. Compile locally (ships with desktop wallet)</span>
+<span class="kw">const</span> { bytecode, abi } = <span class="kw">await</span> window.monerousd.dsol.compile(<span class="str">'ErcPrivate.dsol'</span>);
+
+<span class="cmt">// 2. Deploy &mdash; bond is debited from USDm balance</span>
+<span class="kw">const</span> deploy = <span class="kw">await</span> window.monerousd.dcDeploy({
+  bytecode,
+  abi,
+  constructorArgs: [<span class="str">'MyToken'</span>, <span class="str">'MTK'</span>, <span class="str">'1000000'</span>, callerStealth],
+});
+<span class="cmt">// &rarr; { contractId: 'dc1_...', codeHash, bondPaid }</span>
+
+<span class="cmt">// 3. Commit (block N). Wallet hashes (entry, args, salt) and broadcasts.</span>
+<span class="kw">const</span> { commitId } = <span class="kw">await</span> window.monerousd.dcCall({
+  contractId: deploy.contractId,
+  entrypoint: <span class="str">'transfer'</span>,
+  args: [recipientStealth, <span class="str">'25000'</span>],
+});
+<span class="cmt">// 4. Reveal (block N+2) is automatic once the block clears.</span>
+
+<span class="cmt">// 5. Read public state or encrypted return values any time</span>
+<span class="kw">const</span> res = <span class="kw">await</span> fetch(`https://ion.monerousd.org/v1/contracts/${deploy.contractId}`).then(r =&gt; r.json());
+<span class="cmt">// res.state.name &rarr; "MyToken"    (public)</span>
+<span class="cmt">// res.state.totalSupply &rarr; { commitment, rangeProofHash }  (private)</span></pre>
+
+    <h3>5.7 Language reference</h3>
+    <table>
+      <thead><tr><th>Resource</th><th>Where</th></tr></thead>
+      <tbody>
+        <tr><td><code>LANGUAGE.md</code></td><td>Inside the desktop wallet package: <code>dark-contracts/LANGUAGE.md</code>. Full syntax, opcodes, and stdlib.</td></tr>
+        <tr><td><code>PROTOCOL-DC-V1.md</code></td><td>Frozen wire-format spec: opcodes, attestation codec, state-root layout, Pedersen <code>H</code> generator bytes.</td></tr>
+        <tr><td>Stdlib</td><td><code>dark-contracts/stdlib/</code>: <code>Erc20Private.dsol</code>, <code>NftCollection.dsol</code>, <code>Ownable.dsol</code>, <code>Pausable.dsol</code>, <code>PausableToken.dsol</code>, <code>ReentrancyGuard.dsol</code>.</td></tr>
+        <tr><td>Compiler CLI</td><td><code>dsolc compile MyContract.dsol</code> &rarr; produces <code>MyContract.dc</code> + <code>MyContract.abi.json</code>.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>5.8 Production-readiness security model (v1.2.182)</h3>
+    <p>Two security rules are binding on every DSOL contract that lands in the wallet bundle:</p>
+
+    <div class="wp-note"><strong>Rule 107 &mdash; caller-authorization on every state-mutating entrypoint.</strong> Nobody other than the owner, the scoped stealth address, or the explicit <code>operatorStealth</code> set at deploy may call any function that mutates state attributed to a specific actor, acts as a privileged operator, or modifies another actor&apos;s resource. Comments-as-authorization (e.g. <code>// operator-only</code> without the matching <code>require()</code>) are forbidden &mdash; that bug class produced two critical findings in the v1.2.182 audit (IonSwapDeposit::register and LimitOrderBook::record_fill, both of which were missing their documented operator gates).</div>
+
+    <p>Acceptable authorization patterns:</p>
+    <table>
+      <thead><tr><th>Pattern</th><th>Use case</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><code>modifier onlyOwner</code></td><td>Single-owner admin (Ownable inheritance)</td><td><code>pause()</code>, <code>unpause()</code>, NFT collection owner</td></tr>
+        <tr><td><code>require(msg.sender == operatorStealth)</code></td><td>Privileged operator pinned at deploy</td><td>IonSwapDeposit::register, LimitOrderBook::record_fill</td></tr>
+        <tr><td><code>require(msg.sender == ownerOf[id])</code></td><td>Per-resource ownership</td><td>NftCollection::transfer</td></tr>
+        <tr><td><code>require(msg.sender == orderOwner[id])</code></td><td>Per-order ownership</td><td>LimitOrderBook::cancel</td></tr>
+        <tr><td><code>require(amount &gt; 0)</code> + <code>require(to != msg.sender)</code></td><td>Universal transfer guards</td><td>Erc20Private::transfer, PausableToken::transfer</td></tr>
+      </tbody>
+    </table>
+
+    <div class="wp-note"><strong>Rule 108 &mdash; mandatory security audit before bundling.</strong> Every contract change runs through this checklist before it&apos;s compiled into the wallet binary:</div>
+    <ul class="wp-list">
+      <li>Every <code>entry</code> has a documented authorization model (open to anyone? owner-only? operator-only? stealth-keyed?), and the code matches the documentation.</li>
+      <li>Every state-mutating entry guards on <code>msg.sender</code> appropriately (rule 107).</li>
+      <li>Every numeric input has a positivity check (<code>require(amount &gt; 0)</code>).</li>
+      <li>Every transfer has a self-transfer guard (<code>require(to != msg.sender)</code>).</li>
+      <li>Every transfer has a destination check (<code>require(to != 0)</code> or equivalent).</li>
+      <li>Every nullifier-protected entry uses a UNIQUE nullifier per authorized intent (replay defense isn&apos;t griefing-proof without a separate authorization gate).</li>
+      <li>Every override of an inherited entry replicates the parent&apos;s require chain (Phase-1 inheritance does NOT chain <code>require</code>s).</li>
+      <li>Compile + run the full DSOL test suite (<code>tests/dark-contracts/*.test.js</code>) before merging.</li>
+    </ul>
+
+    <h3>5.9 Host syscall reference</h3>
+    <p>Dark Contracts touch the outside world only through <code>SYSCALL</code>. Every syscall in the table below routes to the SAME canonical handler the hardcoded attestation paths use, so a DSOL contract emitting an event produces byte-identical <code>pool_events</code> rows to the legacy attestation flow. DC-8 (&quot;syscall invariants propagate&quot;) is satisfied by construction.</p>
+
+    <table>
+      <thead><tr><th>Syscall</th><th>opId</th><th>Canonical event</th><th>Authorization</th></tr></thead>
+      <tbody>
+        <tr><td><code>TOKEN_TRANSFER_EMIT_V1</code></td><td><code>0x0101</code></td><td><code>token_transfer</code></td><td>caller-debited (<code>srcStealth = ctx.callerStealth</code>)</td></tr>
+        <tr><td><code>TOKEN_MINT_SUPPLY_V1</code></td><td><code>0x0102</code></td><td><code>token_supply_mint</code></td><td>backend enforces <code>creator_stealth === callerStealth</code></td></tr>
+        <tr><td><code>LP_MINT_V1</code></td><td><code>0x0201</code></td><td><code>mint_first</code> / <code>mint</code></td><td>creator-only for non-verified asset1; pool-create on demand</td></tr>
+        <tr><td><code>LP_BURN_V1</code></td><td><code>0x0202</code></td><td><code>burn</code></td><td>requires (positionId, openAmount, openBlinding) match committed Pedersen opening</td></tr>
+        <tr><td><code>BRIDGE_UNWRAP_EMIT_V1</code></td><td><code>0x0301</code></td><td><code>bridge_burn</code> (full unwrap)</td><td>caller&apos;s indexed balance &ge; amount; address validated; dynamic-fee surge applied</td></tr>
+        <tr><td><code>NFT_MINT_V1</code></td><td><code>0x0401</code></td><td><code>nft_mint</code></td><td>mints to caller (the <code>to</code> argv field is ignored)</td></tr>
+        <tr><td><code>NFT_TRANSFER_V1</code></td><td><code>0x0402</code></td><td><code>nft_transfer</code></td><td>caller must currently own the item (<code>NFT_NOT_OWNER</code> otherwise)</td></tr>
+        <tr><td><code>READ_BALANCE_V1</code></td><td><code>0x0500</code></td><td>(read-only)</td><td>privacy-preserving: returns commitment hash, never plaintext</td></tr>
+        <tr><td><code>READ_BLOCK_V1</code></td><td><code>0x0501</code></td><td>(read-only)</td><td>open</td></tr>
+        <tr><td><code>EXT_CALL_TAIL_V1</code></td><td><code>0x0601</code></td><td>(no event)</td><td>tail-only; reentrancy impossible by construction</td></tr>
+        <tr><td><code>VERIFY_RANGE_PROOF_BPPP_V1</code></td><td><code>0x0700</code></td><td>(read-only)</td><td>open; charges 100,000 instruction steps per verify</td></tr>
+      </tbody>
+    </table>
+
+    <h3>5.10 Bulletproofs++ verification (v1.2.182)</h3>
+    <p>The <code>VERIFY_RANGE_PROOF_BPPP_V1</code> syscall lets DSOL contracts validate Bulletproofs++ range proofs that prove a committed value lies in <code>[0, 2<sup>64</sup>)</code> without revealing the value. The verifier runs entirely on-chain (consuming the per-call instruction budget) so contracts can gate state transitions on cryptographic range guarantees.</p>
+
+    <pre class="code-block"><span class="cmt">// argv: { commitmentHex: "&lt;64-char hex&gt;",</span>
+<span class="cmt">//        proofHex: "&lt;1088-char hex = 544 bytes&gt;",</span>
+<span class="cmt">//        Nd?: 16, Np?: 16,</span>
+<span class="cmt">//        transcriptLabel?: "BPPP-V1-..." }</span>
+<span class="cmt">//</span>
+<span class="cmt">// returns: { valid: bool, soundnessMode: "real"|"soft", Nd, Np }</span>
+<span class="kw">let</span> argv = abi.encode({ commitmentHex, proofHex });
+<span class="kw">let</span> result = syscall(VERIFY_RANGE_PROOF_BPPP_V1, argv);
+<span class="kw">require</span>(result.valid, <span class="str">"RANGE_PROOF_INVALID"</span>);</pre>
+
+    <p>The proof is 544 bytes for the canonical 64-bit range. Step-cost is fixed at 100,000 (10% of the 1,000,000-instruction per-call budget per DC-2) &mdash; heavy enough to deter contracts that loop on verification, cheap enough that ~10 verifications per call are economically reasonable.</p>
+
+    <p>Activation flag: when <code>BPPP_REAL_SOUNDNESS=1</code> is set in the indexer&apos;s environment, <code>pedersen.js::rangeProof()</code> returns 576 bytes (32 commitment + 544 BP++ proof) instead of the legacy 96-byte SHA-512 placeholder. The wire-shape difference is intentional &mdash; silent soundness downgrade is impossible because consumers immediately fail on length mismatch. Operators flip the flag once they have validated their indexer ships with the real verifier; the live VPS has it set as of v1.2.182.</p>
+
+    <h2 id="ion-swap">6. Ion Swap Pool Integration</h2>
+    <p><a href="https://ion.monerousd.org" target="_blank" rel="noopener noreferrer">Ion Swap</a> is the private batch AMM for MoneroUSD. Every swap goes through a commit-reveal cycle &mdash; no transparent path exists.</p>
+
+    <h3>Swap Lifecycle</h3>
+    <div class="wp-diagram">
+      <div class="flow">
+        <div class="node orange">Block N</div>
+        <div class="arrow">&rarr;</div>
+        <div class="node">commit = H(pool, side, amt, minOut, salt)</div>
+        <div class="arrow">&rarr;</div>
+        <div class="node">POST /api/batch/commit</div>
+      </div>
+      <div class="flow" style="margin-top:10px">
+        <div class="node orange">Block N+2</div>
+        <div class="arrow">&rarr;</div>
+        <div class="node">POST /api/batch/reveal (params + salt)</div>
+        <div class="arrow">&rarr;</div>
+        <div class="node">Uniform-price batch clearing</div>
+      </div>
+      <div class="caption">All reveals in a batch clear at the same price. MEV is cryptographically impossible.</div>
+    </div>
+
+    <h3>API Endpoints</h3>
+    <table>
+      <thead><tr><th>Endpoint</th><th>Method</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>/api/pools</code></td><td>GET</td><td>List all pools with reserves, volume, fees</td></tr>
+        <tr><td><code>/api/pool/create</code></td><td>POST</td><td>Create a new TOKEN/USDm pool</td></tr>
+        <tr><td><code>/api/batch/commit</code></td><td>POST</td><td>Submit a commit hash for a swap</td></tr>
+        <tr><td><code>/api/batch/reveal</code></td><td>POST</td><td>Reveal swap params after 2 blocks</td></tr>
+        <tr><td><code>/api/orders/submit</code></td><td>POST</td><td>Submit encrypted dark-pool limit order</td></tr>
+        <tr><td><code>/api/config</code></td><td>GET</td><td>Protocol configuration (fee rates, committee key, etc.)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Protocol Fee Split</h3>
+    <p>Every fee collected routes through a non-configurable split, enforced at the settlement layer:</p>
+    <table>
+      <thead><tr><th>Source</th><th>Fee</th><th>Reserves</th><th>POL</th><th>Bounty</th></tr></thead>
+      <tbody>
+        <tr><td>Standard swap</td><td>30 bps</td><td>60%</td><td>30%</td><td>10%</td></tr>
+        <tr><td>Stable-pair swap</td><td>5 bps</td><td>60%</td><td>30%</td><td>10%</td></tr>
+        <tr><td>Dark-pool match</td><td>20 bps</td><td>60%</td><td>30%</td><td>10%</td></tr>
+        <tr><td>Token creation bond</td><td>Flat</td><td>60%</td><td>30%</td><td>10%</td></tr>
+        <tr><td>NFT royalty</td><td>200 bps</td><td>50%</td><td>30%</td><td>20%</td></tr>
+        <tr><td>Bridge wrap/unwrap</td><td>10 bps</td><td>70%</td><td>20%</td><td>10%</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="activity-api">7. Activity API (v1)</h2>
+    <p>Wallets and block explorers can render a canonical, deterministic activity feed for any set of stealth subaddresses via the indexer's <code>/v1/activity</code> endpoint. The feed is derived directly from <code>pool_events</code> and includes every token transfer, bridge mint, and bridge burn involving the queried addresses &mdash; not just outbound transactions the local <code>wallet-rpc</code> happens to know about.</p>
+
+    <table>
+      <thead><tr><th>Endpoint</th><th>Method</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>/v1/activity?addrs=&lt;csv&gt;</code></td><td>GET</td><td>Returns up to the most recent <code>N</code> activity rows (default 200) involving any of the supplied stealth subaddresses.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Response row shape</h3>
+    <pre class="code-block">{
+  <span class="str">"txHash"</span>: <span class="str">"ca758d7c..."</span>,
+  <span class="str">"blockHeight"</span>: 142850,
+  <span class="str">"ts"</span>: 1714000000000,
+  <span class="str">"direction"</span>: <span class="str">"in"</span>,                   <span class="cmt">// "in" | "out"</span>
+  <span class="str">"eventType"</span>: <span class="str">"token_transfer"</span>,      <span class="cmt">// "token_transfer" | "bridge_mint" | "bridge_burn"</span>
+  <span class="str">"tokenId"</span>: <span class="str">"ion1_f7f71a00..."</span>,
+  <span class="str">"symbol"</span>: <span class="str">"Sats"</span>,
+  <span class="str">"decimals"</span>: 8,
+  <span class="str">"logoUrl"</span>: <span class="str">"/api/token-logo/ion1_f7f71a00..."</span>,
+  <span class="str">"amount"</span>: <span class="str">"10000000000"</span>,           <span class="cmt">// atomic units, as a string (BigInt-safe)</span>
+  <span class="str">"counterpartyStealth"</span>: <span class="str">"Mp6mHy..."</span>   <span class="cmt">// may be null if out-of-view</span>
+}</pre>
+
+    <div class="wp-note"><strong>Use the <code>logoUrl</code> field as your source of truth.</strong> It is served by the indexer and tracks whatever the token creator uploaded; the client does not need a separate logo registry. The <code>symbol</code> and <code>decimals</code> fields are resolved from the backend asset registry, so the feed is usable even when the local wallet has never seen the token before.</div>
+
+    <h2 id="wallet-rpc">8. Wallet-RPC Reference</h2>
+    <p>For server-side integration, use the wallet-rpc JSON-RPC interface. Any language that can make HTTP requests works.</p>
+
+    <h3>Endpoints</h3>
+    <table>
+      <thead><tr><th>Service</th><th>Default Port</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>USDm daemon RPC</td><td>17750</td><td>Chain queries, block templates, tx broadcast</td></tr>
+        <tr><td>Wallet RPC</td><td>27750</td><td>Balance, transfers, address generation</td></tr>
+        <tr><td>Ion Swap API</td><td>7777</td><td>Pools, swaps, tokens, orders</td></tr>
+        <tr><td>Ion Swap WebSocket</td><td>7778</td><td>Real-time block ticks, batch events</td></tr>
+        <tr><td>Explorer</td><td>8081</td><td>Block/tx/token display</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Example: Query Balance via curl</h3>
+    <pre class="code-block">curl -s http://127.0.0.1:27750/json_rpc \
+  -d '{<span class="str">"jsonrpc"</span>:<span class="str">"2.0"</span>,<span class="str">"id"</span>:<span class="str">"0"</span>,<span class="str">"method"</span>:<span class="str">"get_balance"</span>,
+       <span class="str">"params"</span>:{<span class="str">"asset_type"</span>:<span class="str">"USDm"</span>}}' \
+  -H <span class="str">"Content-Type: application/json"</span></pre>
+
+    <h3>Example: Send Transfer via curl</h3>
+    <pre class="code-block">curl -s http://127.0.0.1:27750/json_rpc \
+  -d '{<span class="str">"jsonrpc"</span>:<span class="str">"2.0"</span>,<span class="str">"id"</span>:<span class="str">"0"</span>,<span class="str">"method"</span>:<span class="str">"transfer"</span>,
+       <span class="str">"params"</span>:{<span class="str">"destinations"</span>:[{<span class="str">"address"</span>:<span class="str">"Mp6mH..."</span>,<span class="str">"amount"</span>:100000000}],
+                <span class="str">"asset_type"</span>:<span class="str">"USDm"</span>}}' \
+  -H <span class="str">"Content-Type: application/json"</span></pre>
+
+    <h2 id="privacy">9. Privacy Best Practices</h2>
+
+    <div class="wp-card-grid">
+      <div class="wp-card">
+        <h4>Stealth Addresses</h4>
+        <div class="val">Per-origin</div>
+        <p>Every dApp gets a fresh subaddress. Your main account stays hidden. Never reuse addresses across dApps.</p>
+      </div>
+      <div class="wp-card">
+        <h4>Pedersen Commitments</h4>
+        <div class="val">Hidden Amounts</div>
+        <p>All amounts are Pedersen-committed with Bulletproofs+ range proofs. Observers see commitments, never values.</p>
+      </div>
+      <div class="wp-card">
+        <h4>Commit-Reveal</h4>
+        <div class="val">MEV-Free</div>
+        <p>Every swap is hash-committed before reveal. Front-running is cryptographically impossible.</p>
+      </div>
+      <div class="wp-card">
+        <h4>FCMP++</h4>
+        <div class="val">Full Chain</div>
+        <p>Full-chain membership proofs. Every output in the chain is a decoy &mdash; no ring size limitation.</p>
+      </div>
+    </div>
+
+    <h3>Guidelines for dApp Developers</h3>
+    <ul class="wp-list">
+      <li><strong>Never store plaintext amounts or order payloads.</strong> Use Pedersen commitments for LP positions and encrypted payloads for limit orders.</li>
+      <li><strong>Support Tor / .onion.</strong> Use the <code>tor-detect.js</code> pattern to detect Tor Browser and .onion routing. Offer clearnet-free operation.</li>
+      <li><strong>No localStorage for sensitive data.</strong> Incognito Mode users expect zero persistence. Use in-memory state only for privacy-critical data.</li>
+      <li><strong>Fresh subaddresses.</strong> For maximum privacy, request a new subaddress per transaction rather than reusing the per-origin address.</li>
+    </ul>
+
+    <h2 id="examples">10. Example Projects</h2>
+
+    <h3>Minimal Swap dApp</h3>
+    <pre class="code-block"><span class="cmt">// Connect wallet and execute a private swap via Ion Swap</span>
+<span class="kw">const</span> { address } = <span class="kw">await</span> window.monerousd.connect();
+<span class="kw">const</span> balance = <span class="kw">await</span> window.monerousd.getBalance({ asset_type: <span class="str">'USDm'</span> });
+
+<span class="cmt">// Get a quote from Ion Swap</span>
+<span class="kw">const</span> quote = <span class="kw">await</span> fetch(<span class="str">'https://ion.monerousd.org/api/quote'</span>, {
+  method: <span class="str">'POST'</span>,
+  headers: { <span class="str">'content-type'</span>: <span class="str">'application/json'</span> },
+  body: JSON.stringify({ from: <span class="str">'USDm'</span>, to: <span class="str">'wBTC'</span>, amountIn: <span class="str">'1000'</span> }),
+}).then(r =&gt; r.json());
+
+<span class="cmt">// Commit the swap (hash-hiding, MEV-free)</span>
+<span class="kw">const</span> salt = crypto.getRandomValues(<span class="kw">new</span> Uint8Array(32));
+<span class="cmt">// ... commit and reveal flow via batch-client.js</span></pre>
+
+    <h3>Token Launcher</h3>
+    <pre class="code-block"><span class="cmt">// Create a token and auto-create a pool on Ion Swap</span>
+<span class="kw">const</span> token = <span class="kw">await</span> window.monerousd.createToken({
+  name: <span class="str">'Community Token'</span>, symbol: <span class="str">'CMT'</span>,
+  decimals: 8, maxSupply: <span class="str">'10000000'</span>, supplyRule: <span class="str">'fixed'</span>,
+});
+
+<span class="cmt">// token.tokenId → "ion1_..." (69-char unique address)</span>
+
+<span class="cmt">// Create a CMT/USDm pool with initial liquidity</span>
+<span class="kw">await</span> fetch(<span class="str">'https://ion.monerousd.org/api/pool/create'</span>, {
+  method: <span class="str">'POST'</span>,
+  headers: { <span class="str">'content-type'</span>: <span class="str">'application/json'</span> },
+  body: JSON.stringify({
+    asset0: <span class="str">'CMT'</span>, asset1: <span class="str">'USDm'</span>,
+    amount0: <span class="str">'5000000'</span>, amount1: <span class="str">'10000'</span>,
+  }),
+});</pre>
+
+    <h3>Merchant Payment Gateway</h3>
+    <pre class="code-block"><span class="cmt">// Server-side: create an invoice via Ion Swap invoicing API</span>
+<span class="kw">const</span> invoice = <span class="kw">await</span> fetch(<span class="str">'https://ion.monerousd.org/api/invoices/create'</span>, {
+  method: <span class="str">'POST'</span>,
+  headers: { <span class="str">'content-type'</span>: <span class="str">'application/json'</span> },
+  body: JSON.stringify({
+    amount: <span class="str">'50.00'</span>,
+    currency: <span class="str">'USDm'</span>,
+    acceptedAssets: [<span class="str">'USDm'</span>, <span class="str">'wBTC'</span>, <span class="str">'wXMR'</span>],
+    merchantAddress: <span class="str">'Mp6mH...'</span>,
+    memo: <span class="str">'Order #12345'</span>,
+  }),
+}).then(r =&gt; r.json());
+
+<span class="cmt">// Payer sends any accepted asset; Ion Swap auto-converts</span>
+<span class="cmt">// to USDm and delivers to merchant's stealth subaddress.</span></pre>
+
+    <p style="text-align: center; color: var(--muted); margin-top: 48px; font-size: 0.92rem;">MoneroUSD is open source. Build with privacy as the default.</p>
+  </div>
+
+  <footer><p>MoneroUSD &copy; 2026 &mdash; <a href="/">Home</a> &middot; <a href="/whitepaper.html">Whitepaper</a> &middot; <a href="/developers.html">Developers</a> &middot; <a href="https://ion.monerousd.org" target="_blank">Ion Swap</a></p></footer>
+<script>
+(function() {
+  var btn = document.getElementById('navHamburger');
+  var menu = document.getElementById('navMobileMenu');
+  if (!btn || !menu) return;
+  btn.addEventListener('click', function() {
+    var open = menu.classList.toggle('open');
+    btn.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open);
+  });
+  menu.querySelectorAll('a').forEach(function(a) {
+    a.addEventListener('click', function() {
+      menu.classList.remove('open');
+      btn.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    });
+  });
+})();
+</script>
+</body>
+</html>

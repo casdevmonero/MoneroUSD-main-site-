@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Run Your Own Node — MoneroUSD</title>
-  <meta name="description" content="Step-by-step guide to run your own MoneroUSD (USDm) node. Mining rewards go to your wallet only." />
+  <meta name="description" content="Run a MoneroUSD (USDm) node in one click or one command. Full guide for desktop, terminal, and VPS setups." />
   <style>
     @font-face { font-family: 'Outfit'; src: url('/fonts/outfit-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
     @font-face { font-family: 'Outfit'; src: url('/fonts/outfit-600.woff2') format('woff2'); font-weight: 600; font-display: swap; }
@@ -17,7 +17,7 @@
     a { color: var(--orange); text-decoration: none; }
     a:hover { text-decoration: underline; }
 
-    nav { background: rgba(10,10,10,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,102,0,0.1); padding: 0 28px; }
+    nav { background: rgba(10,10,10,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,102,0,0.1); padding: 0 28px; position: sticky; top: 0; z-index: 100; }
     .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 68px; }
     .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); font-weight: 700; font-size: 1.2rem; }
     .nav-logo img { height: 36px; width: 36px; }
@@ -28,19 +28,39 @@
     .content { max-width: 900px; margin: 0 auto; padding: 48px 28px 80px; }
     h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 12px; }
     h2 { font-size: 1.3rem; font-weight: 700; margin: 40px 0 12px; color: var(--orange); }
+    h3 { font-size: 1.05rem; font-weight: 600; margin: 20px 0 8px; }
     .subtitle { color: var(--muted); margin-bottom: 8px; font-size: 1.05rem; }
-    .os-detect { color: var(--green); font-weight: 600; }
+    p { margin-bottom: 10px; }
     p.note { color: var(--muted); font-size: 0.88rem; margin-top: 8px; }
+    ul { margin: 8px 0 12px 22px; }
+    li { margin-bottom: 6px; }
 
-    pre { background: #010409; border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--green); line-height: 1.7; margin: 10px 0; }
+    pre { background: #010409; border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--green); line-height: 1.7; margin: 10px 0; position: relative; }
     pre .comment { color: var(--muted); }
+    pre.hero-cmd { font-size: 1rem; padding: 22px 24px; border-color: rgba(255,102,0,0.3); background: rgba(1,4,9,0.9); }
+
+    .copy-btn { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 4px 10px; font-size: 0.72rem; cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.15s; }
+    .copy-btn:hover { background: rgba(255,102,0,0.15); color: var(--orange); border-color: rgba(255,102,0,0.3); }
+
+    .method-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin: 20px 0 32px; }
+    .method-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: border-color 0.2s; }
+    .method-card:hover { border-color: rgba(255,102,0,0.3); }
+    .method-card h3 { margin: 0 0 6px; color: var(--orange); font-size: 1rem; }
+    .method-card p { color: var(--muted); font-size: 0.88rem; margin: 0; }
+    .method-card .tag { display: inline-block; background: var(--orange-dim); color: var(--orange); font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
 
     .warn { background: rgba(255,102,0,0.08); border: 1px solid rgba(255,102,0,0.2); border-radius: 10px; padding: 14px 18px; margin: 12px 0; font-size: 0.88rem; color: var(--muted); }
     .warn strong { color: var(--orange); }
 
-    table { width: 100%; border-collapse: collapse; margin: 12px 0 32px; }
+    .info { background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.18); border-radius: 10px; padding: 14px 18px; margin: 12px 0; font-size: 0.88rem; color: var(--muted); }
+    .info strong { color: var(--green); }
+
+    table { width: 100%; border-collapse: collapse; margin: 12px 0 24px; }
     th { text-align: left; padding: 10px 14px; font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); background: var(--card); }
-    td { padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+    td code { background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; }
+
+    .section-divider { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
 
     .dim { opacity: 0.4; }
 
@@ -59,7 +79,7 @@
     .nav-mobile-menu .btn-wallet-mobile { margin: 12px 28px 0; background: var(--orange); color: #fff; border-radius: 10px; text-align: center; padding: 13px 24px; font-weight: 600; border-bottom: none; }
     .nav-mobile-menu .btn-wallet-mobile:hover { background: #e55a00; }
 
-    @media (max-width: 640px) { pre { font-size: 0.75rem; } }
+    @media (max-width: 640px) { pre { font-size: 0.75rem; } pre.hero-cmd { font-size: 0.85rem; } .method-cards { grid-template-columns: 1fr; } }
     @media (max-width: 768px) { .nav-links { display: none; } .nav-hamburger { display: flex; } }
   </style>
 </head>
@@ -69,8 +89,11 @@
       <a href="/" class="nav-logo"><img src="/logo.svg" alt="" />MoneroUSD</a>
       <div class="nav-links">
         <a href="/">Home</a>
-        <a href="/about.html">MoneroUSD vs Monero</a>
-        <a href="/wallet">Open Wallet</a>
+        <a href="/about.html">Details</a>
+        <a href="/whitepaper.html">Whitepaper</a>
+        <a href="/run-node.html" class="active">Run a Node</a>
+        <a href="https://ion.monerousd.org" target="_blank" rel="noopener noreferrer">Ion Swap</a>
+        <a href="/developers.html">Developers</a>
       </div>
       <button class="nav-hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false">
         <span></span><span></span><span></span>
@@ -78,28 +101,135 @@
     </div>
     <div class="nav-mobile-menu" id="navMobileMenu">
       <a href="/">Home</a>
-      <a href="/about.html">MoneroUSD vs Monero</a>
-      <a href="/wallet" class="btn-wallet-mobile">Open Wallet</a>
+      <a href="/about.html">Details</a>
+      <a href="/whitepaper.html">Whitepaper</a>
+      <a href="/run-node.html">Run a Node</a>
+      <a href="https://ion.monerousd.org" target="_blank" rel="noopener noreferrer">Ion Swap</a>
+      <a href="/developers.html">Developers</a>
     </div>
   </nav>
 
   <div class="content">
     <h1>Run Your Own Node</h1>
-    <p class="subtitle">Set up a MoneroUSD node and mine USDm to your own wallet. Mining rewards go only to the node owner.</p>
-    <p class="subtitle">Detected OS: <span class="os-detect" id="detectedOS">Detecting...</span> — commands below adapt to your system.</p>
+    <p class="subtitle">Set up a MoneroUSD node in one click, one command, or build from source. Every node strengthens the network.</p>
 
-    <h2>1. Install Dependencies</h2>
+    <!-- Three methods overview -->
+    <div class="method-cards">
+      <div class="method-card">
+        <span class="tag">Easiest</span>
+        <h3>Desktop Wallet</h3>
+        <p>Open the desktop wallet, go to Local Node, click Create. Downloads and configures everything automatically.</p>
+      </div>
+      <div class="method-card">
+        <span class="tag">One Command</span>
+        <h3>Terminal Installer</h3>
+        <p>Single curl command. Works on Linux and macOS. Supports systemd for VPS operators.</p>
+      </div>
+      <div class="method-card">
+        <span class="tag">Full Control</span>
+        <h3>Build from Source</h3>
+        <p>Clone the repo and compile. Full customization, audit the code yourself.</p>
+      </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- METHOD 1: Terminal Installer -->
+    <!-- ================================================================ -->
+    <h2 id="quick-install">Quick Install (One Command)</h2>
+    <p>The fastest way to run a node. Downloads the daemon binary, creates the config, and starts syncing.</p>
+
+    <pre class="hero-cmd"><button class="copy-btn" onclick="copyCmd(this)">Copy</button>curl -sSL https://monerousd.org/install-node.sh | bash</pre>
+
+    <p class="note">Works on Linux (x64) and macOS (arm64/x64). Requires curl or wget.</p>
+
+    <h3>Advanced Usage</h3>
+    <p>Pass flags for VPS deployments, pruning, public node mode, and custom ports:</p>
+
+<pre><button class="copy-btn" onclick="copyCmd(this)">Copy</button><span class="comment"># VPS with systemd, pruning, and public RPC</span>
+bash install-node.sh --prune --public --systemd
+
+<span class="comment"># Custom data directory and ports</span>
+bash install-node.sh --data-dir /opt/monerousd --p2p-port 18080 --rpc-port 18081
+
+<span class="comment"># Download the script first (inspect before running)</span>
+curl -sSL https://monerousd.org/install-node.sh -o install-node.sh
+less install-node.sh
+bash install-node.sh --prune</pre>
+
+    <h3>Installer Flags</h3>
+    <table>
+      <thead><tr><th>Flag</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>--prune</code></td><td>off</td><td>Prune blockchain to save ~2/3 disk space</td></tr>
+        <tr><td><code>--public</code></td><td>off</td><td>Enable public node (allow remote RPC connections on port 17751)</td></tr>
+        <tr><td><code>--systemd</code></td><td>off</td><td>Create and enable systemd service (auto-start on boot)</td></tr>
+        <tr><td><code>--data-dir DIR</code></td><td><code>~/.monerousd</code></td><td>Data directory for blockchain, config, and logs</td></tr>
+        <tr><td><code>--p2p-port N</code></td><td><code>17749</code></td><td>Peer-to-peer sync port</td></tr>
+        <tr><td><code>--rpc-port N</code></td><td><code>17750</code></td><td>RPC port for wallet connections</td></tr>
+        <tr><td><code>--seed-node H:P</code></td><td><code>seed.monerousd.org:17749</code></td><td>Custom seed node for initial peer discovery</td></tr>
+        <tr><td><code>--help</code></td><td>—</td><td>Show help and exit</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Manage Your Node</h3>
+<pre><button class="copy-btn" onclick="copyCmd(this)">Copy</button><span class="comment"># Check sync status</span>
+curl -s http://127.0.0.1:17750/json_rpc \
+  -d '{"jsonrpc":"2.0","id":"0","method":"get_info"}' | python3 -m json.tool
+
+<span class="comment"># View logs</span>
+tail -f ~/.monerousd/logs/USDmd.log
+
+<span class="comment"># Stop node</span>
+kill $(pgrep -f USDmd)</pre>
+
+    <!-- Systemd Section -->
+    <h3>Systemd Service (VPS / Servers)</h3>
+    <p>When you pass <code>--systemd</code>, the installer creates a service that auto-starts on boot:</p>
+
+<pre><span class="comment"># Service management</span>
+sudo systemctl status usdmd       <span class="comment"># Check status</span>
+sudo systemctl stop usdmd         <span class="comment"># Stop</span>
+sudo systemctl start usdmd        <span class="comment"># Start</span>
+sudo systemctl restart usdmd      <span class="comment"># Restart</span>
+journalctl -u usdmd -f            <span class="comment"># Live logs</span></pre>
+
+    <div class="info"><strong>Tip:</strong> For VPS operators, combine <code>--prune --public --systemd</code> for a lightweight public node that starts automatically and serves remote wallets.</div>
+
+    <hr class="section-divider" />
+
+    <!-- ================================================================ -->
+    <!-- METHOD 2: Desktop Wallet -->
+    <!-- ================================================================ -->
+    <h2 id="desktop">Desktop Wallet (One Click)</h2>
+    <p>The <a href="/">MoneroUSD Desktop Wallet</a> has a built-in node manager. No terminal required.</p>
+    <ol style="margin: 12px 0 12px 22px;">
+      <li>Open the desktop wallet and go to the <strong>Local Node</strong> tab</li>
+      <li>Optionally enable <strong>Pruning</strong>, <strong>Public Node</strong>, or set a <strong>Bootstrap Daemon</strong> in advanced options</li>
+      <li>Click <strong>Create Local Node</strong></li>
+      <li>The wallet downloads the daemon (~30 MB), configures it, and starts syncing</li>
+      <li>Once the node verifies successfully, your wallet automatically connects to your local node</li>
+    </ol>
+
+    <p>You can switch between your local node and the public node at any time using the <strong>Daemon Source</strong> toggle.</p>
+
+    <div class="warn"><strong>Disk space:</strong> A full node requires ~5 GB. Enable pruning to reduce this to ~2 GB.</div>
+
+    <hr class="section-divider" />
+
+    <!-- ================================================================ -->
+    <!-- METHOD 3: Build from Source -->
+    <!-- ================================================================ -->
+    <h2 id="source">Build from Source</h2>
+    <p>For full control, audit the code and compile yourself.</p>
+
+    <h3>Dependencies</h3>
     <div id="depsMac">
       <p><strong>macOS (Homebrew)</strong></p>
 <pre><span class="comment"># Install Homebrew if needed</span>
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 <span class="comment"># Install build tools</span>
-brew upgrade cmake && brew upgrade make
-brew install boost openssl hidapi zmq libsodium miniupnpc readline protobuf
-
-<span class="comment"># Or install all deps at once</span>
-brew bundle --file=MoneroUSD-main/contrib/brew/Brewfile</pre>
+brew install cmake boost openssl hidapi zmq libsodium miniupnpc readline protobuf</pre>
     </div>
     <div id="depsLinux">
       <p><strong>Ubuntu / Debian</strong></p>
@@ -109,7 +239,7 @@ brew bundle --file=MoneroUSD-main/contrib/brew/Brewfile</pre>
   protobuf-compiler ccache</pre>
     </div>
 
-    <h2>2. Clone and Build</h2>
+    <h3>Compile</h3>
 <pre id="buildCmd"><span class="comment"># Clone the repository</span>
 git clone https://github.com/monerousd/MoneroUSD-main.git
 cd MoneroUSD-main
@@ -118,11 +248,11 @@ cd MoneroUSD-main
 make release -j$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 2)</pre>
 
     <div id="opensslStep">
-      <h2>3. Set OpenSSL Path (macOS only)</h2>
+      <h3>Set OpenSSL Path (macOS only)</h3>
 <pre>export OPENSSL_ROOT_DIR="$(brew --prefix openssl)"</pre>
     </div>
 
-    <h2 id="step4h">4. Start the Daemon</h2>
+    <h3>Start the Daemon</h3>
 <pre id="daemonCmd"><span class="comment"># Create data directory</span>
 mkdir -p ~/.monerousd
 
@@ -135,9 +265,8 @@ mkdir -p ~/.monerousd
 
 <span class="comment"># Verify it's running</span>
 kill -0 $(cat ~/.monerousd/USDmd.pid) && echo "Daemon running"</pre>
-    <p class="note">First sync may take time depending on your connection speed.</p>
 
-    <h2 id="step5h">5. Create a Wallet</h2>
+    <h3>Create a Wallet</h3>
 <pre id="walletCmd"><span class="comment"># Generate a new wallet (save your seed phrase!)</span>
 ./build/release/bin/monerousd-wallet \
   --daemon-address 127.0.0.1:17750 \
@@ -145,7 +274,7 @@ kill -0 $(cat ~/.monerousd/USDmd.pid) && echo "Daemon running"</pre>
   --password "YOUR_SECURE_PASSWORD"</pre>
     <div class="warn"><strong>Important:</strong> Write down your 25-word seed phrase and store it safely. It is the only way to recover your wallet.</div>
 
-    <h2 id="step6h">6. Start Mining</h2>
+    <h3>Start Mining</h3>
 <pre id="miningCmd"><span class="comment"># Get your wallet address</span>
 ./build/release/bin/monerousd-wallet \
   --daemon-address 127.0.0.1:17750 \
@@ -153,51 +282,49 @@ kill -0 $(cat ~/.monerousd/USDmd.pid) && echo "Daemon running"</pre>
   --password "YOUR_SECURE_PASSWORD" \
   --command address
 
-<span class="comment"># Set your miner address and start the desktop app</span>
-export MINER_ADDRESS="YOUR_WALLET_ADDRESS_HERE"
-node server.js
-
-<span class="comment"># Or mine directly from the wallet CLI</span>
+<span class="comment"># Mine from the wallet CLI</span>
 <span class="comment"># In the wallet prompt, type: start_mining 1</span></pre>
-    <p class="note">Mining rewards go only to the MINER_ADDRESS you set. Other users cannot redirect rewards.</p>
+    <p class="note">Mining rewards go only to your wallet address. Other users cannot redirect your rewards.</p>
 
-    <h2>7. Run Swap Service (Optional)</h2>
-<pre>cd swap-service && npm install
+    <hr class="section-divider" />
 
-export USDM_WALLET_RPC_URL=http://127.0.0.1:27750
-export BTC_NETWORK=mainnet
-export MINER_ADDRESS="YOUR_WALLET_ADDRESS"
-node index.js
-<span class="comment"># Swap backend running on http://0.0.0.0:8787</span></pre>
-
-    <h2>8. Verify Your Node</h2>
-<pre><span class="comment"># Check daemon status</span>
-curl -s http://127.0.0.1:17750/json_rpc \
-  -d '{"jsonrpc":"2.0","id":"0","method":"get_info"}' \
-  -H "Content-Type: application/json" | python3 -m json.tool
-
-<span class="comment"># Check mining status</span>
-curl -s http://127.0.0.1:17750/mining_status \
-  -H "Content-Type: application/json" | python3 -m json.tool</pre>
-
-    <h2>Network Ports</h2>
+    <!-- ================================================================ -->
+    <!-- Network Ports Reference -->
+    <!-- ================================================================ -->
+    <h2 id="ports">Network Ports</h2>
     <table>
       <thead><tr><th>Port</th><th>Service</th><th>Purpose</th></tr></thead>
       <tbody>
-        <tr><td>17750</td><td>USDmd RPC</td><td>Daemon JSON-RPC</td></tr>
-        <tr><td>27750</td><td>Wallet RPC</td><td>Primary wallet RPC</td></tr>
-        <tr><td>8787</td><td>Swap Service</td><td>BTC/XMR ↔ USDm swaps</td></tr>
-        <tr><td>8788</td><td>Light Wallet</td><td>Browser wallet sessions</td></tr>
-        <tr><td>8789</td><td>Lending</td><td>Collateralized lending</td></tr>
-        <tr><td>8790</td><td>Staking</td><td>Yield distribution</td></tr>
-        <tr><td>8081</td><td>Explorer</td><td>Block explorer</td></tr>
+        <tr><td><code>17749</code></td><td>P2P</td><td>Peer-to-peer blockchain sync</td></tr>
+        <tr><td><code>17750</code></td><td>Daemon RPC</td><td>Unrestricted RPC (wallet-rpc requires this)</td></tr>
+        <tr><td><code>17751</code></td><td>Restricted RPC</td><td>Public-safe RPC (read-only queries)</td></tr>
+        <tr><td><code>27750</code></td><td>Wallet RPC</td><td>Local wallet operations</td></tr>
       </tbody>
     </table>
+
+    <div class="info"><strong>Firewall:</strong> At minimum, open port <code>17749</code> (P2P) for your node to find peers. Open <code>17751</code> if running a public node.</div>
+
+    <!-- ================================================================ -->
+    <!-- FAQ -->
+    <!-- ================================================================ -->
+    <h2 id="faq">FAQ</h2>
+    <h3>How much disk space do I need?</h3>
+    <p>A full node needs ~5 GB. With <code>--prune</code>, about 2 GB. The blockchain grows slowly.</p>
+
+    <h3>Can I run a node on a VPS?</h3>
+    <p>Yes. Use <code>curl -sSL https://monerousd.org/install-node.sh | bash -s -- --prune --public --systemd</code> for a production VPS setup with auto-start.</p>
+
+    <h3>Does running a node earn USDm?</h3>
+    <p>Running a node secures the network but does not directly mine. To mine, start mining from your wallet (either CLI or desktop app) while connected to your local node.</p>
+
+    <h3>Can I switch back to the public node?</h3>
+    <p>Yes. The desktop wallet lets you toggle between your local node and the public node at any time. Your wallet keeps working on whichever daemon is active.</p>
   </div>
 
-  <footer><p>MoneroUSD &copy; 2026 — <a href="/">Home</a></p></footer>
+  <footer><p>MoneroUSD &copy; 2026 — <a href="/">Home</a> &middot; <a href="/whitepaper.html">Whitepaper</a></p></footer>
 
   <script>
+  // Mobile nav
   (function() {
     var btn = document.getElementById('navHamburger');
     var menu = document.getElementById('navMobileMenu');
@@ -215,22 +342,28 @@ curl -s http://127.0.0.1:17750/mining_status \
       });
     });
   })();
-  </script>
 
-  <script>
+  // Copy button
+  function copyCmd(btn) {
+    var pre = btn.parentElement;
+    var text = pre.textContent.replace(/^Copy/, '').trim();
+    navigator.clipboard.writeText(text).then(function() {
+      btn.textContent = 'Copied!';
+      setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
+    });
+  }
+
+  // OS detection — dim non-matching sections
   (function() {
     var ua = navigator.userAgent || '';
     var os = /Mac/i.test(ua) ? 'macOS' : /Win/i.test(ua) ? 'Windows' : 'Linux';
-    document.getElementById('detectedOS').textContent = os;
 
-    // Dim non-matching OS install section
     if (os === 'macOS') {
       var el = document.getElementById('depsLinux'); if (el) el.classList.add('dim');
     } else {
       var el = document.getElementById('depsMac'); if (el) el.classList.add('dim');
     }
 
-    // Hide macOS-only OpenSSL step on non-Mac
     if (os !== 'macOS') {
       var el = document.getElementById('opensslStep'); if (el) el.style.display = 'none';
     }
@@ -240,7 +373,6 @@ curl -s http://127.0.0.1:17750/mining_status \
     var home = os === 'Windows' ? '%USERPROFILE%' : '~';
     var nproc = os === 'macOS' ? '$(sysctl -n hw.ncpu)' : '$(nproc)';
 
-    // Update build command
     var buildEl = document.getElementById('buildCmd');
     if (buildEl) {
       buildEl.innerHTML =
@@ -251,7 +383,6 @@ curl -s http://127.0.0.1:17750/mining_status \
         'make release -j' + nproc;
     }
 
-    // Update daemon command
     var dEl = document.getElementById('daemonCmd');
     if (dEl) {
       dEl.innerHTML =
@@ -267,7 +398,6 @@ curl -s http://127.0.0.1:17750/mining_status \
         'kill -0 $(cat ' + home + '/.monerousd/USDmd.pid) && echo "Daemon running"';
     }
 
-    // Update wallet command
     var wEl = document.getElementById('walletCmd');
     if (wEl) {
       wEl.innerHTML =
@@ -278,7 +408,6 @@ curl -s http://127.0.0.1:17750/mining_status \
         '  --password "YOUR_SECURE_PASSWORD"';
     }
 
-    // Update mining command
     var mEl = document.getElementById('miningCmd');
     if (mEl) {
       mEl.innerHTML =
@@ -288,10 +417,7 @@ curl -s http://127.0.0.1:17750/mining_status \
         '  --wallet-file ' + home + '/monerousd-wallet/miner \\\n' +
         '  --password "YOUR_SECURE_PASSWORD" \\\n' +
         '  --command address\n\n' +
-        '<span class="comment"># Set your miner address and start the desktop app</span>\n' +
-        'export MINER_ADDRESS="YOUR_WALLET_ADDRESS_HERE"\n' +
-        'node server.js\n\n' +
-        '<span class="comment"># Or mine directly from the wallet CLI</span>\n' +
+        '<span class="comment"># Mine from the wallet CLI</span>\n' +
         '<span class="comment"># In the wallet prompt, type: start_mining 1</span>';
     }
   })();
