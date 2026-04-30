@@ -259,6 +259,35 @@
       font-family: inherit;
     }
     .btn-dl:hover { background: var(--orange); color: #fff; }
+    /* Temporarily-disabled download button — grayed-out "Coming Soon"
+       state used while desktop wallet downloads are paused. Re-enable
+       by reverting the four <span class="btn-dl btn-dl-soon"> elements
+       in the #download section back to <a href="…" class="btn-dl">. */
+    .btn-dl-soon {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.04);
+      color: #6a6a6a;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px; padding: 10px 24px;
+      font-weight: 600; font-size: 0.9rem;
+      font-family: inherit;
+      cursor: not-allowed;
+      user-select: none;
+      text-align: center;
+    }
+    .btn-dl-soon::before { content: "⏳ "; opacity: 0.7; }
+    .dl-soon-notice {
+      max-width: 720px;
+      margin: 0 auto 28px;
+      padding: 12px 18px;
+      background: rgba(255, 102, 0, 0.05);
+      border: 1px solid rgba(255, 102, 0, 0.22);
+      border-radius: 10px;
+      color: #FFD8A0;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      text-align: center;
+    }
 
     /* Quarantine Notice */
     .quarantine-notice {
@@ -632,25 +661,28 @@
     <div class="section-inner">
       <h2 class="section-title">Download</h2>
       <p class="section-subtitle">Native desktop wallet for every platform.</p>
+      <div class="dl-soon-notice" role="status">
+        Desktop wallet downloads are temporarily paused while we ship a maintenance release. Existing installs continue to receive updates via in-app OTA. Check back soon.
+      </div>
       <div class="downloads-grid">
         <div class="dl-card">
           <div class="dl-icon">&#63743;</div>
           <h3>macOS</h3>
           <div class="dl-version">v1.2.98 &mdash; Apple Silicon &amp; Intel</div>
-          <a href="https://update.monerousd.org/Monero%20USD%20Wallet-1.2.176-arm64.dmg" class="btn-dl">Download for Mac (Apple Silicon)</a>
-          <a href="https://update.monerousd.org/Monero%20USD%20Wallet-1.2.176.dmg" class="btn-dl" style="margin-top:6px">Download for Mac (Intel)</a>
+          <span class="btn-dl-soon" aria-disabled="true" title="Temporarily unavailable. Coming back online soon.">Coming Soon &mdash; Mac (Apple Silicon)</span>
+          <span class="btn-dl-soon" aria-disabled="true" title="Temporarily unavailable. Coming back online soon." style="margin-top:6px">Coming Soon &mdash; Mac (Intel)</span>
         </div>
         <div class="dl-card">
           <div class="dl-icon">&#128187;</div>
           <h3>Windows</h3>
           <div class="dl-version">v1.2.86 &mdash; 64-bit</div>
-          <a href="https://update.monerousd.org/Monero%20USD%20Wallet%20Setup%201.2.47.exe" class="btn-dl">Download for Windows</a>
+          <span class="btn-dl-soon" aria-disabled="true" title="Temporarily unavailable. Coming back online soon.">Coming Soon &mdash; Windows</span>
         </div>
         <div class="dl-card">
           <div class="dl-icon">&#128039;</div>
           <h3>Linux</h3>
           <div class="dl-version">v1.2.86 &mdash; AppImage</div>
-          <a href="https://update.monerousd.org/Monero%20USD%20Wallet-1.2.47.AppImage" class="btn-dl">Download for Linux</a>
+          <span class="btn-dl-soon" aria-disabled="true" title="Temporarily unavailable. Coming back online soon.">Coming Soon &mdash; Linux</span>
         </div>
       </div>
 
