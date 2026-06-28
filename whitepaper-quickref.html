@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MoneroUSD Whitepaper v3 — Quick Reference</title>
+  <meta name="description" content="MoneroUSD (USDm) whitepaper v3: a post-quantum, fully private USD stablecoin and ecosystem — PQ-FCMP++ privacy, zero-knowledge confidential amounts, a block-DAG with constant-size verification, the Ion Swap post-quantum DEX, usernames, and USDm Pay." />
+  <style>
+    @font-face { font-family: 'Outfit'; src: url('/fonts/outfit-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+    @font-face { font-family: 'Outfit'; src: url('/fonts/outfit-600.woff2') format('woff2'); font-weight: 600; font-display: swap; }
+    @font-face { font-family: 'Outfit'; src: url('/fonts/outfit-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+    @font-face { font-family: 'JetBrains Mono'; src: url('/fonts/jetbrainsmono-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+
+    :root {
+      --orange: #FF6600;
+      --orange-glow: rgba(255,102,0,0.3);
+      --orange-dim: rgba(255,102,0,0.12);
+      --bg: #0a0a0a;
+      --surface: #111;
+      --card: #161616;
+      --border: #222;
+      --text: #eaeaea;
+      --muted: #888;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --red: #ef4444;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); line-height: 1.75; }
+    a { color: var(--orange); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Navigation */
+    nav { background: rgba(10,10,10,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,102,0,0.1); padding: 0 28px; position: sticky; top: 0; z-index: 100; }
+    .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 68px; }
+    .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); font-weight: 700; font-size: 1.2rem; }
+    .nav-logo img { height: 36px; width: 36px; }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { color: var(--muted); font-size: 0.9rem; font-weight: 500; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-links a.active { color: var(--orange); }
+
+    .nav-hamburger { display: none; flex-direction: column; justify-content: center; align-items: center; gap: 5px; width: 40px; height: 40px; cursor: pointer; background: none; border: none; padding: 4px; }
+    .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: all 0.25s; }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav-mobile-menu { display: none; flex-direction: column; position: absolute; top: 68px; left: 0; right: 0; background: rgba(10,10,10,0.97); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,102,0,0.15); padding: 8px 0 16px; z-index: 99; }
+    .nav-mobile-menu.open { display: flex; }
+    .nav-mobile-menu a { color: var(--muted); text-decoration: none; font-size: 1rem; font-weight: 500; padding: 14px 28px; border-bottom: 1px solid rgba(255,255,255,0.04); transition: color 0.2s, background 0.2s; }
+    .nav-mobile-menu a:last-child { border-bottom: none; }
+    .nav-mobile-menu a:hover { color: var(--text); background: rgba(255,102,0,0.05); text-decoration: none; }
+    .nav-mobile-menu .btn-wallet-mobile { margin: 12px 28px 0; background: var(--orange); color: #fff; border-radius: 10px; text-align: center; padding: 13px 24px; font-weight: 600; border-bottom: none; }
+
+    /* Hero/Title */
+    .wp-hero { text-align: center; padding: 80px 28px 48px; position: relative; overflow: hidden; }
+    .wp-hero::before { content: ''; position: absolute; top: -60%; left: 50%; transform: translateX(-50%); width: 600px; height: 600px; background: radial-gradient(circle, var(--orange-glow) 0%, transparent 70%); opacity: 0.15; pointer-events: none; }
+    .wp-logo { width: 80px; height: 80px; margin: 0 auto 24px; filter: drop-shadow(0 0 30px rgba(255,102,0,0.3)); }
+    .wp-title { font-size: 2.6rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 12px; }
+    .wp-title span { color: var(--orange); }
+    .wp-version { color: var(--muted); font-size: 0.95rem; margin-bottom: 8px; }
+    .wp-date { color: var(--muted); font-size: 0.85rem; }
+    .download-pdf-btn:hover { background: #e55a00 !important; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(255,102,0,0.3); }
+
+    /* Table of Contents */
+    .toc { max-width: 480px; margin: 0 auto 64px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px 32px; }
+    .toc h2 { font-size: 1rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; border: none; padding: 0; }
+    .toc ol { list-style: none; counter-reset: toc; }
+    .toc li { counter-increment: toc; }
+    .toc li a { display: flex; align-items: center; padding: 8px 0; color: var(--text); font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.03); transition: color 0.15s; }
+    .toc li a:hover { color: var(--orange); text-decoration: none; }
+    .toc li a::before { content: counter(toc) "."; color: var(--orange); font-weight: 700; width: 28px; flex-shrink: 0; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+    .toc li:last-child a { border-bottom: none; }
+
+    /* Content */
+    .wp-content { max-width: 820px; margin: 0 auto; padding: 0 28px 80px; }
+    .wp-content h2 { font-size: 1.6rem; font-weight: 700; color: var(--orange); margin: 56px 0 16px; padding-top: 24px; border-top: 1px solid var(--border); }
+    .wp-content h2:first-of-type { border-top: none; margin-top: 0; }
+    .wp-content h3 { font-size: 1.15rem; font-weight: 600; margin: 32px 0 12px; color: var(--text); }
+    .wp-content p { margin-bottom: 16px; color: var(--text); font-size: 0.98rem; }
+
+    .wp-content table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; }
+    .wp-content th { text-align: left; padding: 10px 14px; font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); background: var(--card); }
+    .wp-content td { padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 0.92rem; }
+    .wp-content tr:hover { background: rgba(255,102,0,0.03); }
+
+    .wp-formula { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin: 16px 0 24px; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--orange); overflow-x: auto; }
+    .wp-formula .label { color: var(--muted); font-size: 0.8rem; display: block; margin-bottom: 8px; font-family: 'Outfit', sans-serif; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .wp-note { background: rgba(255,102,0,0.06); border-left: 3px solid var(--orange); padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 16px 0 24px; font-size: 0.92rem; }
+    .wp-note strong { color: var(--orange); }
+
+    .wp-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 16px 0 24px; }
+    .wp-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .wp-card h4 { font-size: 0.82rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .wp-card .val { font-size: 1.3rem; font-weight: 700; color: var(--orange); font-family: 'JetBrains Mono', monospace; }
+    .wp-card p { font-size: 0.88rem; color: var(--muted); margin-top: 4px; margin-bottom: 0; }
+
+    .tier-bar { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 10px; margin-bottom: 8px; font-size: 0.9rem; }
+    .tier-bar .label { font-weight: 600; min-width: 80px; }
+    .tier-bar .desc { color: var(--muted); flex: 1; }
+    .tier-bar .rate { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+    .tier-normal { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.15); }
+    .tier-normal .label, .tier-normal .rate { color: var(--green); }
+    .tier-warning { background: rgba(234,179,8,0.08); border: 1px solid rgba(234,179,8,0.15); }
+    .tier-warning .label, .tier-warning .rate { color: var(--yellow); }
+    .tier-stress { background: rgba(255,102,0,0.08); border: 1px solid rgba(255,102,0,0.15); }
+    .tier-stress .label, .tier-stress .rate { color: var(--orange); }
+    .tier-emergency { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.15); }
+    .tier-emergency .label, .tier-emergency .rate { color: var(--red); }
+
+    .wp-diagram { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin: 16px 0 24px; text-align: center; }
+    .wp-diagram .flow { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; font-size: 0.9rem; }
+    .wp-diagram .node { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; font-weight: 600; }
+    .wp-diagram .node.orange { border-color: var(--orange); color: var(--orange); background: rgba(255,102,0,0.06); }
+    .wp-diagram .arrow { color: var(--muted); font-size: 1.2rem; }
+    .wp-diagram .caption { color: var(--muted); font-size: 0.82rem; margin-top: 12px; }
+
+    ul.wp-list { margin: 8px 0 20px 20px; }
+    ul.wp-list li { margin-bottom: 8px; font-size: 0.95rem; }
+    ul.wp-list li::marker { color: var(--orange); }
+
+    footer { border-top: 1px solid var(--border); padding: 24px 28px; text-align: center; color: var(--muted); font-size: 0.8rem; }
+
+    @media (max-width: 640px) {
+      .wp-title { font-size: 1.8rem; }
+      .wp-card-grid { grid-template-columns: 1fr; }
+      .wp-diagram .flow { flex-direction: column; }
+      .wp-diagram .arrow { transform: rotate(90deg); }
+    }
+    @media (max-width: 768px) { .nav-links { display: none; } .nav-hamburger { display: flex; } }
+    @media print {
+      /* Page geometry */
+      @page { size: letter; margin: 18mm 16mm 18mm 16mm; }
+      @page :first { margin-top: 12mm; }
+
+      /* Hide site chrome */
+      nav, .nav-mobile-menu, footer, .download-pdf-btn { display: none !important; }
+      .nav-hamburger { display: none !important; }
+
+      /* Print-safe colors — keep the black-bg, orange-accent identity readable on paper.
+         Site stays dark on screen; print swaps to white background with retained orange
+         accents and a darker text color so dim greys don't ghost out. */
+      body { background: #fff !important; color: #1a1a1a !important; line-height: 1.55; font-size: 10.5pt; }
+      .wp-hero::before { display: none !important; }
+      .wp-hero { padding: 0 0 24px !important; }
+      .wp-logo { width: 64px; height: 64px; filter: none !important; }
+      .wp-title { font-size: 24pt !important; color: #1a1a1a; }
+      .wp-title span { color: #e55a00; }
+      .wp-version, .wp-date { color: #555 !important; }
+
+      /* Table of Contents — render once, never split */
+      .toc { background: #fff !important; border: 1px solid #888 !important; max-width: 100% !important; margin: 0 0 18pt !important; padding: 14pt 18pt !important; page-break-inside: avoid; page-break-after: always; }
+      .toc h2 { color: #555 !important; }
+      .toc li a { color: #1a1a1a !important; border-bottom: 1px solid #ddd !important; }
+      .toc li a::before { color: #e55a00 !important; }
+
+      /* Body content — never page-break inside an atomic block */
+      .wp-content { max-width: 100% !important; padding: 0 !important; }
+      .wp-content h2 { color: #e55a00 !important; font-size: 16pt !important;
+                       margin: 22pt 0 10pt; padding-top: 12pt; border-top: 1px solid #ccc !important;
+                       page-break-before: auto; page-break-after: avoid; break-after: avoid; }
+      .wp-content h2:first-of-type { border-top: none !important; margin-top: 0; padding-top: 0; }
+      .wp-content h3 { font-size: 12pt !important; color: #1a1a1a !important;
+                       margin: 18pt 0 8pt; page-break-after: avoid; break-after: avoid; }
+      .wp-content p { margin-bottom: 8pt; orphans: 3; widows: 3; }
+
+      /* Atomic blocks — keep formulas, code, diagrams, tables, notes whole */
+      .wp-formula, .wp-note, .wp-diagram, .wp-card, .wp-card-grid,
+      .tier-bar, table, pre, blockquote, ul.wp-list, ol {
+        page-break-inside: avoid; break-inside: avoid;
+      }
+
+      /* Formulas / code blocks — print-tinted box, mono color preserved */
+      .wp-formula { background: #faf6f3 !important; border: 1px solid #d8c3b0 !important;
+                    color: #c14400 !important; font-size: 9pt !important; padding: 10pt 12pt !important; white-space: pre-wrap; word-break: break-word; }
+      .wp-formula .label { color: #777 !important; }
+
+      /* Notes — orange-tinted side bar reads cleanly on paper */
+      .wp-note { background: #fff7f0 !important; border-left: 3px solid #e55a00 !important; color: #1a1a1a !important; }
+      .wp-note strong { color: #c14400 !important; }
+
+      /* Cards / stat grids — flatten to a 2-up so they fit per page */
+      .wp-card-grid { grid-template-columns: 1fr 1fr !important; gap: 8pt !important; }
+      .wp-card { background: #fff !important; border: 1px solid #ccc !important; padding: 10pt !important; page-break-inside: avoid; }
+      .wp-card .val { color: #c14400 !important; font-size: 12pt !important; }
+      .wp-card h4, .wp-card p { color: #555 !important; }
+
+      /* Tier bars — keep semantic color but on a printable background */
+      .tier-bar { border: 1px solid #ddd !important; background: #fafafa !important; }
+      .tier-normal .label, .tier-normal .rate { color: #16803c !important; }
+      .tier-warning .label, .tier-warning .rate { color: #a16207 !important; }
+      .tier-stress .label, .tier-stress .rate { color: #c14400 !important; }
+      .tier-emergency .label, .tier-emergency .rate { color: #b91c1c !important; }
+
+      /* Diagrams — collapse the SVG halo, keep the box flat-rendered */
+      .wp-diagram { background: #fff !important; border: 1px solid #ccc !important; padding: 12pt !important; page-break-inside: avoid; }
+      .wp-diagram .node { background: #fafafa !important; border: 1px solid #ccc !important; }
+      .wp-diagram .node.orange { border-color: #e55a00 !important; color: #c14400 !important; background: #fff7f0 !important; }
+      .wp-diagram .arrow { color: #888 !important; }
+      .wp-diagram .caption { color: #555 !important; }
+
+      /* Tables — repeat header on every page they span; never split a row */
+      .wp-content table { font-size: 9.5pt !important; border-collapse: collapse; page-break-inside: auto; }
+      .wp-content thead { display: table-header-group; }
+      .wp-content tr { page-break-inside: avoid; break-inside: avoid; }
+      .wp-content th { background: #f5f5f5 !important; color: #555 !important; border-bottom: 1px solid #999 !important; }
+      .wp-content td { border-bottom: 1px solid #e0e0e0 !important; color: #1a1a1a !important; }
+      .wp-content tr:hover { background: transparent !important; }
+
+      /* Lists — keep the orange marker, never orphan the trailing item */
+      ul.wp-list li::marker { color: #e55a00 !important; }
+      ul.wp-list li { page-break-inside: avoid; }
+
+      /* Links — readable on paper without underlining every URL */
+      a, a:visited { color: #c14400 !important; text-decoration: none !important; }
+      a[href^="http"]::after { content: ""; }
+    }
+
+    /* v3 SVG diagrams — self-contained dark panels, render on screen and print */
+    .wp-svg { display: block; width: 100%; height: auto; margin: 16px 0 24px; border-radius: 12px; }
+    @media print { .wp-svg { page-break-inside: avoid; break-inside: avoid; max-width: 100%; } }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-logo"><img src="/logo.svg" alt="" />MoneroUSD</a>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">Details</a>
+        <a href="/whitepaper.html" class="active">Whitepaper</a>
+        <a href="/run-node.html">Run a Node</a>
+        <a href="https://ion.monerousd.org" target="_blank" rel="noopener noreferrer">Ion Swap</a>
+        <a href="/developers.html">Developers</a>
+      </div>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="nav-mobile-menu" id="navMobileMenu">
+      <a href="/">Home</a>
+      <a href="/about.html">Details</a>
+      <a href="/whitepaper.html">Whitepaper</a>
+      <a href="/run-node.html">Run a Node</a>
+      <a href="https://ion.monerousd.org" target="_blank" rel="noopener noreferrer">Ion Swap</a>
+      <a href="/developers.html">Developers</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="wp-hero">
+    <img src="/logo.svg" alt="MoneroUSD" class="wp-logo" />
+    <h1 class="wp-title">Monero<span>USD</span> — Quick Reference</h1>
+    <p class="wp-version">Whitepaper v3 · One-page overview of the post-quantum private dollar &amp; ecosystem</p>
+    <p class="wp-date">Launch Edition — 2026</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:16px">
+      <a href="/whitepaper.html" class="download-pdf-btn" style="display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:#FF6600;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.95rem;">
+        &#x1f4d6; Read the Full Whitepaper
+      </a>
+      <a href="/MoneroUSD_Whitepaper.pdf" download class="download-pdf-btn" style="display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:transparent;color:#FF6600;border:1.5px solid #FF6600;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.95rem;">
+        &#x1f4c4; Download PDF
+      </a>
+    </div>
+  </div>
+
+  <div class="wp-content">
+
+    <h2 id="pillars">The Pillars</h2>
+    <div class="wp-card-grid">
+      <div class="wp-card"><h4>Private</h4><div class="val">By default</div><p>No sender, receiver, amount, or metadata leak — anywhere.</p></div>
+      <div class="wp-card"><h4>Post-Quantum</h4><div class="val">Base layer</div><p>PQ-FCMP++, stealth, nullifiers, signatures, recursive STARK verify.</p></div>
+      <div class="wp-card"><h4>Sound</h4><div class="val">No inflation</div><p>Balance &amp; no-inflation gates enforced in-circuit, adversarially tested.</p></div>
+      <div class="wp-card"><h4>Fast</h4><div class="val">&le; 1.8 MB</div><p>One constant-size proof verifies the chain. Phone-class. Instant sync.</p></div>
+    </div>
+
+    <h2 id="specs">Key Specs</h2>
+    <table>
+      <thead><tr><th>Property</th><th>MoneroUSD</th></tr></thead>
+      <tbody>
+        <tr><td>Privacy</td><td>PQ-FCMP++ membership + stealth + nullifiers (no ring signatures)</td></tr>
+        <tr><td>Amounts</td><td>Zero-knowledge confidential, proven in range</td></tr>
+        <tr><td>Cryptography</td><td>Post-quantum, STARK-based, recursive verification</td></tr>
+        <tr><td>Consensus</td><td>GHOSTDAG block-DAG, width 32, ~1s target</td></tr>
+        <tr><td>Verification</td><td>IVC + Decider &rarr; &le;1.8 MB constant-size proof</td></tr>
+        <tr><td>Sync</td><td>Verify one proof &rarr; synced (no history replay)</td></tr>
+        <tr><td>Liveness</td><td>Unconditional — the chain cannot halt</td></tr>
+        <tr><td>Finality</td><td>Bonded-validator threshold certificate (overlay)</td></tr>
+        <tr><td>Transport</td><td>libp2p PQ-gossipsub over Tor v3 onion (onion-only)</td></tr>
+        <tr><td>Issuance</td><td>Post-quantum threshold (FROST-style), overcollateralized, zero-emission</td></tr>
+        <tr><td>Security budget</td><td>Dual-power: PoUW miners &perp; bonded validators</td></tr>
+        <tr><td>Governance</td><td>Bicameral (miners &amp; validators), threshold, auditable</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="ecosystem">The Ecosystem at a Glance</h2>
+    <div class="wp-card-grid">
+      <div class="wp-card"><h4>USDm</h4><div class="val">Private $</div><p>Confidential, post-quantum USD-pegged dollar.</p></div>
+      <div class="wp-card"><h4>Ion Swap</h4><div class="val">PQ DEX</div><p>Post-quantum private exchange — sealed-bid, confidential pools, custom tokens.</p></div>
+      <div class="wp-card"><h4>USDm Pay</h4><div class="val">In-wallet</div><p>Built into the desktop wallet with a card — pay by username, requests &amp; checkout.</p></div>
+      <div class="wp-card"><h4>Usernames</h4><div class="val">@names</div><p>Human-readable addresses on a PQ on-chain registry.</p></div>
+      <div class="wp-card"><h4>Bridges</h4><div class="val">No custodian</div><p>FROST threshold custody + atomic swaps.</p></div>
+      <div class="wp-card"><h4>Wallets</h4><div class="val">Local-first</div><p>Desktop, browser dApp provider, light wallet, mobile.</p></div>
+      <div class="wp-card"><h4>Explorer</h4><div class="val">Private</div><p>Confirms health &amp; soundness, reveals nothing.</p></div>
+      <div class="wp-card"><h4>Sovereign Hosting</h4><div class="val">P2P</div><p>Front-ends served from the wallet, chain-anchored.</p></div>
+      <div class="wp-card"><h4>IDE</h4><div class="val">Build</div><p>Write programmable-privacy contracts &amp; tokens.</p></div>
+      <div class="wp-card"><h4>Tokens</h4><div class="val">ion1_</div><p>Permissionless confidential tokens &amp; contracts.</p></div>
+    </div>
+
+    <h2 id="how">How a Private Payment Works</h2>
+    <div class="wp-diagram">
+      <div class="flow">
+        <span class="node">Pay @name / address</span>
+        <span class="arrow">&#8594;</span>
+        <span class="node orange">PQ confidential transfer</span>
+        <span class="arrow">&#8594;</span>
+        <span class="node">Hidden note + nullifier on-chain</span>
+        <span class="arrow">&#8594;</span>
+        <span class="node">Folded into the &le;1.8 MB proof</span>
+      </div>
+      <p class="caption">No public amount, no public counterparty — verified by the same proof every node already runs.</p>
+    </div>
+
+    <div class="wp-note"><strong>This is the launch picture.</strong> Everything above is part of the MoneroUSD ecosystem at 100% completion — what you can do on day one. Read the <a href="/whitepaper.html">full whitepaper</a> for the details and diagrams.</div>
+
+    <p style="text-align: center; color: var(--muted); margin-top: 32px; font-size: 0.92rem;">Open source. Verify everything. Trust nothing.</p>
+  </div>
+
+  <footer><p>MoneroUSD &copy; 2026 — <a href="/">Home</a> · <a href="/about.html">Details</a> · <a href="/whitepaper.html">Whitepaper</a> · <a href="/whitepaper-quickref.html">Quick Reference</a></p></footer>
+<script>
+(function() {
+  var btn = document.getElementById('navHamburger');
+  var menu = document.getElementById('navMobileMenu');
+  if (!btn || !menu) return;
+  btn.addEventListener('click', function() {
+    var open = menu.classList.toggle('open');
+    btn.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open);
+  });
+  menu.querySelectorAll('a').forEach(function(a) {
+    a.addEventListener('click', function() {
+      menu.classList.remove('open'); btn.classList.remove('open'); btn.setAttribute('aria-expanded', 'false');
+    });
+  });
+})();
+</script>
+</body>
+</html>
